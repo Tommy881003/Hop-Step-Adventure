@@ -1,0 +1,60 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class LaserButton : MonoBehaviour {
+
+    public bool press;
+    private bool initial;
+    private Animator animator;
+    public GameObject[] crystalAndButton;
+    private PlayerControl player;
+
+	// Use this for initialization
+	void Start ()
+    {
+        animator = this.GetComponent<Animator>();
+        if (this.name == "LaserButton")
+            press = false;
+        else
+            press = true;
+        player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+        initial = press;
+	}
+	
+	// Update is called once per frame
+	void Update ()
+    {
+        animator.SetBool("Press", press);
+        if (player.dead == true)
+            StartCoroutine(Reset());
+	}
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Player")
+        {
+            PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
+            if (player.canDash == true && player.dashTime >= 0.01f && player.dashCooldown >= 0)
+            {
+                foreach(GameObject temp in crystalAndButton)
+                { 
+                    LaserButton laserButton = temp.GetComponent<LaserButton>();
+                    if(laserButton != null)
+                        laserButton.press = !laserButton.press;
+                    else
+                    {
+                        Line line = temp.GetComponent<Line>();
+                        line.isActivate = !line.isActivate;
+                    }
+                }
+            }
+        }
+    }
+
+    IEnumerator Reset()
+    {
+        yield return new WaitForSecondsRealtime(0.5f);
+        press = initial;
+    }
+}
