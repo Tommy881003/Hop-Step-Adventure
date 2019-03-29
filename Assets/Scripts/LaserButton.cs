@@ -35,7 +35,7 @@ public class LaserButton : MonoBehaviour {
         if (collision.gameObject.tag == "Player")
         {
             PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
-            if (player.canDash == true && player.dashTime >= 0.01f && player.dashCooldown >= 0)
+            if (player.isDashing == true)
             {
                 foreach(GameObject temp in crystalAndButton)
                 { 

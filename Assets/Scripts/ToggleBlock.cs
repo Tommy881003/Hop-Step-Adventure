@@ -36,7 +36,7 @@ public class ToggleBlock : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        if (Input.GetKeyDown(KeyCode.J) && player.canDash == true && player.dashTime >= 0 && player.dashCooldown >= 0)
+        if (Input.GetKeyDown(KeyCode.J) && player.canDash == true)
          {
             animator.SetBool("Transitioning", true);
             currentState = (currentState + 1) % 2;

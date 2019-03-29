@@ -45,7 +45,7 @@ public class Spring : MonoBehaviour {
             PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
             if (jumpX != 0)
                 player.canControlMove = false;
-            player.dashTime = 0;
+            player.isDashing = false;
             player.canDash = true;
             rb.velocity = new Vector2(jumpX,jumpY);
         }
@@ -60,7 +60,7 @@ public class Spring : MonoBehaviour {
             PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
             if (jumpX != 0)
                 player.canControlMove = false;
-            player.dashTime = 0;
+            player.isDashing = false;
             player.canDash = true;
             rb.velocity = new Vector2(jumpX, jumpY);
         }
