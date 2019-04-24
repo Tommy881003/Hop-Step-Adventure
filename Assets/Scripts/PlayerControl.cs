@@ -6,7 +6,6 @@ using DG.Tweening;
 public class PlayerControl : MonoBehaviour {
 
     private Rigidbody2D rb;
-    private BoxCollider2D box;
     private Vector2 velocity;
     private Animator animator;
     private SpriteRenderer sr;
@@ -23,19 +22,20 @@ public class PlayerControl : MonoBehaviour {
 
     public bool canDash;              //can the player dash now?
     public bool isDashing;
+    public bool isTransitioning;
     public bool dead;
     public bool canControlMove;
     private Vector2 dashDirection;
     public float dashTime = 0;
     public float dashCooldown = 0;
-    private float spawntime = 0.05f; 
+    private float spawntime = 0.05f;
+    public Vector2 spawnPos;
 
     public int currentLevel = 0;
 
     void Start()
     {
         rb = this.GetComponent<Rigidbody2D>();
-        box = this.GetComponent<BoxCollider2D>();
         animator = this.GetComponent<Animator>();
         sr = this.GetComponent<SpriteRenderer>();
         dashDirection = new Vector2(0, 0);
@@ -46,7 +46,9 @@ public class PlayerControl : MonoBehaviour {
         canControlMove = true;
         onWall = false;
         backWall = false;
+        isTransitioning = false;
         rb.gravityScale = 2.75f;
+        spawnPos = this.transform.position;
     }
 
     // Update is called once per frame
@@ -222,7 +224,7 @@ public class PlayerControl : MonoBehaviour {
         isDashing = false;
     }
 
-    IEnumerator DashReset()
+    public IEnumerator DashReset()
     {
         yield return new WaitForSecondsRealtime(0.05f);
         canDash = true;
@@ -249,8 +251,8 @@ public class PlayerControl : MonoBehaviour {
     void CheckCollision()
     {
         Vector2 leftfoot, rightfoot, wallVector;
-        leftfoot = new Vector2(rb.transform.position.x - 0.3f, rb.transform.position.y - 1.01f);
-        rightfoot = new Vector2(rb.transform.position.x + 0.3f, rb.transform.position.y - 1.01f);
+        leftfoot = new Vector2(rb.transform.position.x - 0.3f, rb.transform.position.y - rb.transform.localScale.y -0.01f);
+        rightfoot = new Vector2(rb.transform.position.x + 0.3f, rb.transform.position.y - rb.transform.localScale.y - 0.01f);
         RaycastHit2D lefthit = Physics2D.Raycast(leftfoot, Vector2.down, 0.04f), righthit = Physics2D.Raycast(rightfoot, Vector2.down, 0.04f);
         if ((lefthit.collider != null && lefthit.collider.isTrigger == false) || (righthit.collider != null && righthit.collider.isTrigger == false))
         {

@@ -8,7 +8,7 @@ public class MapEditor : Editor
 {
     GameObject[] prefabs;
     GameObject selectedPrefab;
-    string level = "NUM";
+    int level = 0;
     string[] dropdown = new string[] { "All", "BinaryFactory" };
     int length,index,rotationDegree = 0;
 
@@ -88,7 +88,7 @@ public class MapEditor : Editor
             string prefabName = selectedPrefab.name;
             GUILayout.Box(prefabName);
         }
-        level = GUILayout.TextField(level, 3, GUILayout.Width(30));
+        level = EditorGUILayout.IntField(level);
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
@@ -138,6 +138,8 @@ public class MapEditor : Editor
                         }
                     }
                 }
+                if (selectedPrefab.GetComponent<Interactable>() != null)
+                    selectedPrefab.GetComponent<Interactable>().level = level;
             }
         }
 
@@ -191,6 +193,5 @@ public class MapEditor : Editor
         GameObject go = (GameObject)Instantiate(selectedPrefab, new Vector3(_spawnPosition.x, _spawnPosition.y, 0), Quaternion.Euler(0,0,rotationDegree));
         go.name = selectedPrefab.name;
         EditorUtility.SetDirty(go);
-        //blablabla
     }
 }

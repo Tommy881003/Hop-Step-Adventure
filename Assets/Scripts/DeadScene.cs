@@ -13,7 +13,7 @@ public class DeadScene : MonoBehaviour
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
-        control = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+        control = player.GetComponent<PlayerControl>();
         animator = this.GetComponent<Animator>();
         once = true;
     }
@@ -32,7 +32,7 @@ public class DeadScene : MonoBehaviour
     {
         animator.SetTrigger("Dead");
         yield return new WaitForSecondsRealtime(0.5f);
-        player.transform.position = new Vector2(2, 3);
+        player.transform.position = control.spawnPos;
         control.dead = false;
         control.enabled = false;
         once = true;

@@ -46,7 +46,7 @@ public class Spring : MonoBehaviour {
             if (jumpX != 0)
                 player.canControlMove = false;
             player.isDashing = false;
-            player.canDash = true;
+            StartCoroutine(player.DashReset());
             rb.velocity = new Vector2(jumpX,jumpY);
         }
     }
@@ -61,7 +61,7 @@ public class Spring : MonoBehaviour {
             if (jumpX != 0)
                 player.canControlMove = false;
             player.isDashing = false;
-            player.canDash = true;
+            StartCoroutine(player.DashReset());
             rb.velocity = new Vector2(jumpX, jumpY);
         }
     }

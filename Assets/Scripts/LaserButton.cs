@@ -7,7 +7,7 @@ public class LaserButton : MonoBehaviour {
     public bool press;
     private bool initial;
     private Animator animator;
-    public GameObject[] crystalAndButton;
+    private GameObject[] crystalAndButton;
     private PlayerControl player;
 
 	// Use this for initialization
@@ -19,6 +19,7 @@ public class LaserButton : MonoBehaviour {
         else
             press = true;
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+        crystalAndButton = GameObject.FindGameObjectsWithTag("Laser");
         initial = press;
 	}
 	
@@ -35,7 +36,7 @@ public class LaserButton : MonoBehaviour {
         if (collision.gameObject.tag == "Player")
         {
             PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
-            if (player.isDashing == true)
+            if (player.isDashing == true || player.isTransitioning == true)
             {
                 foreach(GameObject temp in crystalAndButton)
                 { 
@@ -54,7 +55,8 @@ public class LaserButton : MonoBehaviour {
 
     IEnumerator Reset()
     {
-        yield return new WaitForSecondsRealtime(0.5f);
+        if (player.isTransitioning == true)
+            yield return new WaitForSecondsRealtime(0.5f);
         press = initial;
     }
 }

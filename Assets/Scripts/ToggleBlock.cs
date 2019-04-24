@@ -54,13 +54,14 @@ public class ToggleBlock : MonoBehaviour {
         }
         else
             animator.SetBool("Transitioning", false);
-        if (player.dead == true)
+        if (player.dead == true || player.isTransitioning == true)
             StartCoroutine(Reset());
     }
 
     IEnumerator Reset()
     {
-        yield return new WaitForSecondsRealtime(0.5f);
+        if(player.isTransitioning == true)
+            yield return new WaitForSecondsRealtime(0.5f);
         currentState = initial;
         if (currentState == 0)
         {

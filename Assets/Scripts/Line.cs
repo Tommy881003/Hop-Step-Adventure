@@ -5,13 +5,20 @@ using UnityEngine;
 public class Line : MonoBehaviour
 {
     private LineRenderer lr;
+    private Rigidbody2D rb;
     public GameObject blob;
     public bool isActivate;
+    public bool isMove;
+    public int MoveSpeed;
+    public Vector2 pingpong;
     private bool initial;
     private PlayerControl player;
     private float t = 0;
     private Vector2 blobPosA,blobPosB,rayDir;
     private GameObject BlobA, BlobB;
+    private int rotation;
+    private int ping = 1;
+    private Vector2 velocity;
 
     // Start is called before the first frame update
     void Start()
@@ -19,7 +26,8 @@ public class Line : MonoBehaviour
         initial = isActivate;
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
         lr = this.GetComponent<LineRenderer>();
-        int rotation = (int)(this.transform.rotation.eulerAngles.z);
+        rb = this.GetComponent<Rigidbody2D>();
+        rotation = (int)(this.transform.rotation.eulerAngles.z);
         switch (rotation)
         {
             case 0:
@@ -47,6 +55,37 @@ public class Line : MonoBehaviour
         lr.enabled = isActivate;
         BlobA.SetActive(isActivate);
         BlobB.SetActive(isActivate);
+        if (isMove == true && isActivate == true)
+        {
+            if (rotation == 0 || rotation == 180)
+            {
+                if(ping == 1)
+                    velocity.y = -MoveSpeed;
+                else
+                    velocity.y = MoveSpeed;
+                if (this.transform.position.y >= Mathf.Max(pingpong.x, pingpong.y))
+                    ping = 1;
+                else if (this.transform.position.y <= Mathf.Min(pingpong.x, pingpong.y))
+                    ping = -1;
+            }
+            else
+            {
+                if (ping == 1)
+                    velocity.x = -MoveSpeed;
+                else
+                    velocity.x = MoveSpeed;
+                if (this.transform.position.x >= Mathf.Max(pingpong.x, pingpong.y))
+                    ping = 1;
+                else if (this.transform.position.x <= Mathf.Min(pingpong.x, pingpong.y))
+                    ping = -1;
+            }
+            rb.velocity = velocity;
+        }
+        else
+        {
+            velocity = rb.velocity;
+            rb.velocity = Vector2.zero;
+        }
         if (isActivate == true)
         {
             bool dohit = false;

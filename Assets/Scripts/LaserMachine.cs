@@ -66,7 +66,7 @@ public class LaserMachine : MonoBehaviour {
 	void Update ()
     {
         animator.SetBool("isActivate", isAcivate);
-        if (player.dead == true)
+        if (player.dead == true || player.isTransitioning == true)
             StartCoroutine(Reset());
 	}
 
@@ -78,7 +78,8 @@ public class LaserMachine : MonoBehaviour {
 
     IEnumerator Reset()
     {
-        yield return new WaitForSecondsRealtime(0.5f);
+        if (player.isTransitioning == true)
+            yield return new WaitForSecondsRealtime(0.5f);
         isAcivate = initial;
     }
 }
