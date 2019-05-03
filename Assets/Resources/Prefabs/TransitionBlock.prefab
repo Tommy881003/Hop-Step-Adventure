@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6187373220401931846}
   m_Layer: 0
   m_Name: TransitionBlock
-  m_TagString: Untagged
+  m_TagString: Transition
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -119,8 +119,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ca21d61e2f6ba04893b0afb9986847e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  level: {fileID: 5757215989362659729, guid: 046d16309efd6fd4481fddef50cf0dda, type: 3}
+  Phantom: {fileID: 5395070203798402628, guid: 82b0b9e136f0dd443b555bb54eecf639, type: 3}
   isLR: 0
   sceneRightOrUp: {x: 0, y: 0}
+  sceneRightOrUp2: {x: 0, y: 0}
+  spawnRightOrUp: {x: 0, y: 0}
   indexRightOrUp: 0
   sceneLeftOrDown: {x: 0, y: 0}
+  sceneLeftOrDown2: {x: 0, y: 0}
+  spawnLeftOrDown: {x: 0, y: 0}
   indexLeftOrDown: 0

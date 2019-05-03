@@ -15,10 +15,13 @@ public class PlayerControl : MonoBehaviour {
     public bool canJump;              //can the player jump now?
     private bool onWall;
     private bool backWall;
+    private bool upWall;
     public bool onGround;
     public bool canControlJump;
     private float fallGravity = 4f;  //control gravity when jumping
     private float lowGravity = 3f;    //control gravity when jumping
+    private float jumpVelocity = 13.5f;
+    private float walkVelocity = 7.5f;
 
     public bool canDash;              //can the player dash now?
     public bool isDashing;
@@ -30,11 +33,19 @@ public class PlayerControl : MonoBehaviour {
     public float dashCooldown = 0;
     private float spawntime = 0.05f;
     public Vector2 spawnPos;
-
+    public PlayerPosition pos;
     public int currentLevel = 0;
 
     void Start()
     {
+        if (pos != null && pos.testMode == true)
+        {
+            this.transform.position = pos.spawnPos;
+            spawnPos = pos.spawnPos;
+            currentLevel = pos.currentLevel;
+        }
+        else
+            spawnPos = this.transform.position;
         rb = this.GetComponent<Rigidbody2D>();
         animator = this.GetComponent<Animator>();
         sr = this.GetComponent<SpriteRenderer>();
@@ -48,7 +59,6 @@ public class PlayerControl : MonoBehaviour {
         backWall = false;
         isTransitioning = false;
         rb.gravityScale = 2.75f;
-        spawnPos = this.transform.position;
     }
 
     // Update is called once per frame
@@ -66,7 +76,7 @@ public class PlayerControl : MonoBehaviour {
             velocity = Dash(velocity);
         if (isDashing == false)
             velocity = HorizontalMoving(velocity);
-        if (Input.GetKeyDown(KeyCode.K) || Input.GetKey(KeyCode.L))
+        if (Input.GetKeyDown(KeyCode.K) || (Input.GetKey(KeyCode.L) && isTransitioning == false))
             velocity = JumpAndClimb(velocity);
 
         velocity = JumpGravity(velocity);
@@ -83,19 +93,19 @@ public class PlayerControl : MonoBehaviour {
         else if (Input.GetAxisRaw("Horizontal") < 0) dir = -1;
         else dir = 0;
         if (canControlMove == true)
-            velocity.x = 7.5f * dir;
+            velocity.x = walkVelocity * dir;
         else
         {
             if (dir == 1)
             {
-                if (velocity.x <= 7.5f)
+                if (velocity.x <= walkVelocity)
                     velocity.x += 0.75f;
                 else if (velocity.x >= 12.5f)
                     velocity.x = 17.5f;
             }
             else if (dir == -1)
             {
-                if (velocity.x >= -7.5f)
+                if (velocity.x >= -walkVelocity)
                     velocity.x -= 0.75f;
                 else if (velocity.x <= -12.5f)
                     velocity.x = -17.5f;
@@ -124,25 +134,25 @@ public class PlayerControl : MonoBehaviour {
                     velocity.y = 10;
                 }
                 else
-                    velocity.y = 13;
+                    velocity.y = jumpVelocity;
             }
             else if(onWall == true || backWall == true)
             {
                 isDashing = false;
                 canControlMove = false;
                 canControlJump = true;
-                velocity.y = 13f;
+                velocity.y = jumpVelocity;
                 if ((sr.flipX == false && onWall == true) || (sr.flipX == true && backWall == true))
-                    velocity.x = -7.5f;
+                    velocity.x = -walkVelocity;
                 else
-                    velocity.x = 7.5f;
+                    velocity.x = walkVelocity;
             }
         }
         else if(Input.GetKey(KeyCode.L) && onWall == true)
         {
             velocity.x = 0;
             rb.gravityScale = 0;
-            if (Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.W) && upWall == true)
                 velocity.y = 3f;
             else if (Input.GetKey(KeyCode.S))
                 velocity.y = -5f;
@@ -155,7 +165,7 @@ public class PlayerControl : MonoBehaviour {
 
     Vector2 JumpGravity(Vector2 velocity)
     {
-        if (velocity.y > 13)
+        if (velocity.y > jumpVelocity)
             canControlJump = false;
         if (canJump == true)
             canControlJump = true;
@@ -268,9 +278,12 @@ public class PlayerControl : MonoBehaviour {
             onGround = false;
         }
         wallVector = (sr.flipX == false) ? Vector2.right : Vector2.left;
-        RaycastHit2D wallhit = Physics2D.Raycast(this.transform.position, wallVector, 0.6f), backwall = Physics2D.Raycast(this.transform.position, -wallVector, 0.6f);
+        RaycastHit2D wallhit = Physics2D.Raycast(this.transform.position, wallVector, 0.6f, ~((1 << 9) | (1 << 8))), 
+                     backwall = Physics2D.Raycast(this.transform.position, -wallVector, 0.6f, ~((1 << 9) | (1 << 8))),
+                     upwall = Physics2D.Raycast(new Vector2(this.transform.position.x, this.transform.position.y + 0.1f), wallVector, 0.6f, ~((1 << 9) | (1 << 2)));
         onWall = (wallhit.collider != null && wallhit.collider.isTrigger == false) ? true : false;
         backWall = (backwall.collider != null && backwall.collider.isTrigger == false) ? true : false;
+        upWall = (upwall.collider != null && upwall.collider.isTrigger == false) ? true : false;
     }
 
     void SetAnimAndFlip()
@@ -293,5 +306,11 @@ public class PlayerControl : MonoBehaviour {
         animator.SetFloat("SpeedX", Mathf.Abs(rb.velocity.x));
         animator.SetFloat("SpeedY", rb.velocity.y);
         animator.SetBool("IsJumping", !canJump);
+    }
+
+    public IEnumerator EndTransition()
+    {
+        yield return new WaitUntil(() => onGround == true);
+        isTransitioning = false;
     }
 }

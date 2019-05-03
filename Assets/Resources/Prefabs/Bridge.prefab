@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 4585983995840272272}
   - component: {fileID: 45679910308611221}
   - component: {fileID: 2100980837249184241}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Bridge
   m_TagString: Multisprites
   m_Icon: {fileID: 0}

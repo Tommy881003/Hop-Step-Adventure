@@ -23,11 +23,13 @@ public class ToggleBlock : MonoBehaviour {
         {
             currentState = 0;
             this.gameObject.layer = 2;
+            render.sortingLayerName = "HighBackground";
         }
         else
         {
             currentState = 1;
             this.gameObject.layer = 0;
+            render.sortingLayerName = "Foreground";
         }
         initial = currentState;
     }
@@ -44,11 +46,13 @@ public class ToggleBlock : MonoBehaviour {
             {
                 box.isTrigger = true;
                 this.gameObject.layer = 2;
+                render.sortingLayerName = "HighBackground";
             }
             else
             {
                 box.isTrigger = false;
                 this.gameObject.layer = 0;
+                render.sortingLayerName = "Foreground";
             }
             picker.SimplePick(currentState);
         }
@@ -67,11 +71,13 @@ public class ToggleBlock : MonoBehaviour {
         {
             box.isTrigger = true;
             this.gameObject.layer = 2;
+            render.sortingLayerName = "HighBackground";
         }
         else
         {
             box.isTrigger = false;
             this.gameObject.layer = 0;
+            render.sortingLayerName = "Foreground";
         }
         picker.SimplePick(currentState);
     }

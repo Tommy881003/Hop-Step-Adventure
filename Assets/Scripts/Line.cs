@@ -23,6 +23,7 @@ public class Line : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        this.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, -1);
         initial = isActivate;
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
         lr = this.GetComponent<LineRenderer>();
@@ -55,6 +56,8 @@ public class Line : MonoBehaviour
         lr.enabled = isActivate;
         BlobA.SetActive(isActivate);
         BlobB.SetActive(isActivate);
+        if (player.dead == true || player.isTransitioning == true)
+            StartCoroutine(Reset());
         if (isMove == true && isActivate == true)
         {
             if (rotation == 0 || rotation == 180)

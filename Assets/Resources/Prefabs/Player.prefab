@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1094465376618489216}
   - component: {fileID: 1094465376618489276}
   - component: {fileID: 1094465376618489279}
-  m_Layer: 2
+  m_Layer: 8
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -145,11 +145,17 @@ MonoBehaviour:
   dash: {fileID: 1272738255929319399, guid: 3ecc6d9f36c38d247adb3a3b286a23a1, type: 3}
   phantom: {fileID: 5395070203798402628, guid: 82b0b9e136f0dd443b555bb54eecf639, type: 3}
   canJump: 0
+  onGround: 0
+  canControlJump: 0
   canDash: 0
+  isDashing: 0
+  isTransitioning: 0
   dead: 0
   canControlMove: 0
   dashTime: 0
   dashCooldown: 0
+  spawnPos: {x: 0, y: 0}
+  pos: {fileID: 0}
   currentLevel: 0
 --- !u!95 &1094465376618489279
 Animator:

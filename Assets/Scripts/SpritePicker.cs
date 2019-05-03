@@ -23,10 +23,23 @@ public class SpritePicker : MonoBehaviour
                 if (x * y == 0 && x + y != 0)
                 {
                     Vector2 newpos = new Vector2(pos.x + x, pos.y + y);
-                    RaycastHit2D hit = Physics2D.Raycast(newpos, Vector2.zero);
-                    if (hit.collider != null && hit.collider.gameObject.name == tilename)
+                    RaycastHit2D[] hits = Physics2D.RaycastAll(newpos, Vector2.zero);
+                    foreach(RaycastHit2D hit in hits)
                     {
-                        spritePicker += num;
+                        if (this.gameObject.GetComponent<Ground>() != null || tilename == "Bridge")
+                        {
+                            if (hit.collider != null && hit.collider.gameObject.GetComponent<Ground>() != null)
+                            {
+                                spritePicker += num;
+                            }
+                        }
+                        else
+                        {
+                            if (hit.collider != null && hit.collider.gameObject.name == tilename)
+                            {
+                                spritePicker += num;
+                            }
+                        }
                     }
                     num = num * 2;
                 }
@@ -40,16 +53,16 @@ public class SpritePicker : MonoBehaviour
             switch (spritePicker)
             {
                 case 0:
-                    this.GetComponent<SpriteRenderer>().sprite = sprites[3];
+                    this.GetComponent<SpriteRenderer>().sprite = sprites[0];
                     break;
                 case 2:
-                    this.GetComponent<SpriteRenderer>().sprite = sprites[2];
-                    break;
-                case 4:
                     this.GetComponent<SpriteRenderer>().sprite = sprites[1];
                     break;
+                case 4:
+                    this.GetComponent<SpriteRenderer>().sprite = sprites[2];
+                    break;
                 default:
-                    this.GetComponent<SpriteRenderer>().sprite = sprites[0];
+                    this.GetComponent<SpriteRenderer>().sprite = sprites[3];
                     break;
             }
         }
@@ -124,10 +137,13 @@ public class SpritePicker : MonoBehaviour
                 if (x * y == 0 && x + y != 0)
                 {
                     Vector2 newpos = new Vector2(pos.x + x, pos.y + y);
-                    RaycastHit2D hit = Physics2D.Raycast(newpos, Vector2.zero);
-                    if (hit.collider != null && hit.collider.gameObject.name == tilename)
+                    RaycastHit2D[] hits = Physics2D.RaycastAll(newpos, Vector2.zero);
+                    foreach(RaycastHit2D hit in hits)
                     {
-                        spritePicker += num;
+                        if (hit.collider != null && hit.collider.gameObject.name == tilename)
+                        {
+                            spritePicker += num;
+                        }
                     }
                     num = num * 2;
                 }

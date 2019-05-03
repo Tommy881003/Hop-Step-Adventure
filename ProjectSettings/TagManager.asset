@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Multisprites
   - Laser
+  - Transition
   layers:
   - Default
   - TransparentFX
@@ -16,7 +17,7 @@ TagManager:
   - 
   - 
   - Player
-  - 
+  - Unclimbable
   - 
   - 
   - 
@@ -43,8 +44,14 @@ TagManager:
   - name: Background
     uniqueID: 2120859041
     locked: 0
+  - name: HighBackground
+    uniqueID: 4265936845
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Foreground
+    uniqueID: 53236795
     locked: 0
   - name: Laser
     uniqueID: 1603354519

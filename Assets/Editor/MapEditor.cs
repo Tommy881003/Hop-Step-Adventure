@@ -8,12 +8,12 @@ public class MapEditor : Editor
 {
     GameObject[] prefabs;
     GameObject selectedPrefab;
-    int level = 0;
     string[] dropdown = new string[] { "All", "BinaryFactory" };
     int length,index,rotationDegree = 0;
 
     void OnSceneGUI()
     {
+        Map map = (Map)target;
         GUILayout.BeginArea(new Rect(10, 10, 400, 200));
 
         //Load all prefabs as objects from the 'Prefabs' folder
@@ -88,7 +88,6 @@ public class MapEditor : Editor
             string prefabName = selectedPrefab.name;
             GUILayout.Box(prefabName);
         }
-        level = EditorGUILayout.IntField(level);
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
@@ -115,31 +114,31 @@ public class MapEditor : Editor
         if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && selectedPrefab != null)
         {
             RaycastHit2D hitInfo = Physics2D.Raycast(gridPosition, Vector2.zero);
-            if (hitInfo.collider == null)
+            if (hitInfo.collider == null || (hitInfo.collider.GetComponent<Ground>() == null && hitInfo.collider.name != selectedPrefab.name))
             {
-                Spawn(gridPosition);
+                Spawn(gridPosition,map);
                 if (selectedPrefab.GetComponent<Multisprites>() != null)
                 {
-                    Debug.Log("yes");
-                    string tileName = selectedPrefab.name;
                     for (int y = 1; y >= -1; y--)
                     {
                         for (int x = -1; x <= 1; x++)
                         {
                             Vector2 newpos = new Vector2(gridPosition.x + x, gridPosition.y + y);
-                            RaycastHit2D hit = Physics2D.Raycast(newpos, Vector2.zero);
-                            if (hit.collider != null && hit.collider.tag == "Multisprites")
+                            RaycastHit2D[] hits = Physics2D.RaycastAll(newpos, Vector2.zero);
+                            foreach(RaycastHit2D hit in hits)
                             {
-                                if (tileName == "ToggleBlock")
-                                    hit.collider.GetComponent<SpritePicker>().PickSprite(tileName, 1);
-                                else
-                                    hit.collider.GetComponent<SpritePicker>().PickSprite(tileName);
+                                if (hit.collider != null && hit.collider.gameObject.GetComponent<Multisprites>() != null)
+                                {
+                                    string tileName = hit.collider.gameObject.name;
+                                    if (tileName == "ToggleBlock")
+                                        hit.collider.GetComponent<SpritePicker>().PickSprite(tileName, 1);
+                                    else
+                                        hit.collider.GetComponent<SpritePicker>().PickSprite(tileName);
+                                }
                             }
                         }
                     }
                 }
-                if (selectedPrefab.GetComponent<Interactable>() != null)
-                    selectedPrefab.GetComponent<Interactable>().level = level;
             }
         }
 
@@ -156,7 +155,6 @@ public class MapEditor : Editor
             if (hitInfo.collider != null)
             {
                 string temptag = hitInfo.collider.gameObject.tag;
-                string tileName = hitInfo.collider.gameObject.name;
                 DestroyImmediate(hitInfo.collider.gameObject);
                 if (temptag == "Multisprites")
                 {
@@ -165,13 +163,17 @@ public class MapEditor : Editor
                         for (int x = -1; x <= 1; x++)
                         {
                             Vector2 newpos = new Vector2(gridPosition.x + x, gridPosition.y + y);
-                            RaycastHit2D hit = Physics2D.Raycast(newpos, Vector2.zero);
-                            if (hit.collider != null && hit.collider.tag == "Multisprites")
+                            RaycastHit2D[] hits = Physics2D.RaycastAll(newpos, Vector2.zero);
+                            foreach(RaycastHit2D hit in hits)
                             {
-                                if (tileName == "ToggleBlock")
-                                    hit.collider.GetComponent<SpritePicker>().PickSprite(tileName, 1);
-                                else
-                                    hit.collider.GetComponent<SpritePicker>().PickSprite(tileName);
+                                if (hit.collider != null && hit.collider.gameObject.GetComponent<Multisprites>() != null)
+                                {
+                                    string tileName = hit.collider.gameObject.name;
+                                    if (tileName == "ToggleBlock")
+                                        hit.collider.GetComponent<SpritePicker>().PickSprite(tileName, 1);
+                                    else
+                                        hit.collider.GetComponent<SpritePicker>().PickSprite(tileName);
+                                }
                             }
                         }
                     }
@@ -188,10 +190,10 @@ public class MapEditor : Editor
         SceneView.RepaintAll();
     }
 
-    void Spawn(Vector2 _spawnPosition)
+    void Spawn(Vector2 _spawnPosition,Map input)
     {
         GameObject go = (GameObject)Instantiate(selectedPrefab, new Vector3(_spawnPosition.x, _spawnPosition.y, 0), Quaternion.Euler(0,0,rotationDegree));
         go.name = selectedPrefab.name;
-        EditorUtility.SetDirty(go);
+        go.transform.parent = input.levelParent.transform;
     }
 }

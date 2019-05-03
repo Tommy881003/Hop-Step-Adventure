@@ -9,7 +9,9 @@ public class CameraHolder : MonoBehaviour {
     private Camera cam;
     private bool once;
     public bool shakeing;
+    public bool isTransitioning;
     public Vector2 corner, corner2;
+    public PlayerPosition pos;
 
 	// Use this for initialization
 	void Start ()
@@ -18,11 +20,22 @@ public class CameraHolder : MonoBehaviour {
         cam = this.GetComponent<Camera>();
         once = true;
         shakeing = false;
+        isTransitioning = false;
+        if(pos.testMode == true)
+        {
+            corner = pos.corner;
+            corner2 = pos.corner2;
+        }
 	}
 	
 	// Update is called once per frame
 	void Update ()
     {
+        if(isTransitioning == true)
+        {
+            DOTween.Kill(this.GetComponent<Camera>());
+            isTransitioning = false;
+        }
         if(player.dead && once)
         {
             cam.DOShakePosition(0.5f, 0.25f);
@@ -34,20 +47,19 @@ public class CameraHolder : MonoBehaviour {
             cam.DOShakePosition(0.3f, 0.1f);
             shakeing = true;
             StartCoroutine(ResetShakeing());
-            Debug.Log("DASH");
         }
         else if(shakeing == false)
         {
             Vector3 camPos = this.transform.position;
             Vector2 playerPos = player.transform.position;
             Vector2 distance = playerPos - new Vector2(camPos.x,camPos.y);
-            float followStrengh = Mathf.Lerp(0.05f, 0.15f, distance.magnitude/1000);
-            camPos.x = Mathf.Lerp(camPos.x, playerPos.x, followStrengh);
+            float followStrengh = Mathf.Lerp(5f, 20f, distance.magnitude/100);
+            camPos.x = Mathf.Lerp(camPos.x, playerPos.x, followStrengh * Time.deltaTime);
             if (camPos.x > Mathf.Max(corner.x, corner2.x))
                 camPos.x = Mathf.Max(corner.x, corner2.x);
             else if (camPos.x < Mathf.Min(corner.x, corner2.x))
                 camPos.x = Mathf.Min(corner.x, corner2.x);
-            camPos.y = Mathf.Lerp(camPos.y, playerPos.y, followStrengh);
+            camPos.y = Mathf.Lerp(camPos.y, playerPos.y, followStrengh * Time.deltaTime);
             if (camPos.y > Mathf.Max(corner.y, corner2.y))
                 camPos.y = Mathf.Max(corner.y, corner2.y);
             else if (camPos.y < Mathf.Min(corner.y, corner2.y))

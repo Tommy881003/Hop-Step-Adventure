@@ -27,7 +27,7 @@ public class LaserButton : MonoBehaviour {
 	void Update ()
     {
         animator.SetBool("Press", press);
-        if (player.dead == true)
+        if (player.dead == true ||player.isTransitioning == true)
             StartCoroutine(Reset());
 	}
 
