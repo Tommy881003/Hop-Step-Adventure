@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bebe31589164cf4eb3bd4831707d452, type: 3}
   m_Name: New Player Position
   m_EditorClassIdentifier: 
-  spawnPos: {x: 62, y: 41}
-  currentLevel: 2
+  spawnPos: {x: 72, y: 26}
+  currentLevel: 3
   corner: {x: 80, y: 33.75}
   corner2: {x: 80, y: 33.75}
-  testMode: 0
+  testMode: 1

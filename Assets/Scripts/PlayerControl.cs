@@ -18,16 +18,19 @@ public class PlayerControl : MonoBehaviour {
     private bool upWall;
     public bool onGround;
     public bool canControlJump;
-    private float fallGravity = 4f;  //control gravity when jumping
+    public bool dashJump;
+    private float fallGravity = 4.5f;  //control gravity when jumping
     private float lowGravity = 3f;    //control gravity when jumping
     private float jumpVelocity = 13.5f;
     private float walkVelocity = 7.5f;
 
+    private bool canReset = true;
     public bool canDash;              //can the player dash now?
     public bool isDashing;
     public bool isTransitioning;
     public bool dead;
     public bool canControlMove;
+    public bool canCollect;
     private Vector2 dashDirection;
     public float dashTime = 0;
     public float dashCooldown = 0;
@@ -59,6 +62,8 @@ public class PlayerControl : MonoBehaviour {
         backWall = false;
         isTransitioning = false;
         rb.gravityScale = 2.75f;
+        canCollect = true;
+        dashJump = false;
     }
 
     // Update is called once per frame
@@ -99,14 +104,14 @@ public class PlayerControl : MonoBehaviour {
             if (dir == 1)
             {
                 if (velocity.x <= walkVelocity)
-                    velocity.x += 0.75f;
+                    velocity.x += 1.5f;
                 else if (velocity.x >= 12.5f)
                     velocity.x = 17.5f;
             }
             else if (dir == -1)
             {
                 if (velocity.x >= -walkVelocity)
-                    velocity.x -= 0.75f;
+                    velocity.x -= 1.5f;
                 else if (velocity.x <= -12.5f)
                     velocity.x = -17.5f;
             }
@@ -127,11 +132,13 @@ public class PlayerControl : MonoBehaviour {
             {
                 canJump = false;
                 canControlJump = true;
-                if (isDashing == true)
+                if (dashJump == true)
                 {
                     isDashing = false;
                     canControlMove = false;
-                    velocity.y = 10;
+                    dashJump = false;
+                    velocity.y = 12f;
+                    velocity.x = 17.5f * Mathf.Sign(velocity.x);
                 }
                 else
                     velocity.y = jumpVelocity;
@@ -171,7 +178,7 @@ public class PlayerControl : MonoBehaviour {
             canControlJump = true;
         if (velocity.y < -35)
             velocity = new Vector2(velocity.x, -35);
-        if (canControlJump == true)
+        if (canControlJump == true || isTransitioning)
         {
             if (velocity.y < 0)
                 velocity += Vector2.up * Physics2D.gravity.y * (fallGravity) * Time.deltaTime;
@@ -188,9 +195,8 @@ public class PlayerControl : MonoBehaviour {
 
     Vector2 Dash(Vector2 velocity)
     {
-        if (Input.GetKeyDown(KeyCode.J) && canDash == true)
+        if (Input.GetKeyDown(KeyCode.J) && canDash == true && isDashing == false)
         {
-            Instantiate(dash, this.transform.position, Quaternion.identity);
             dashDirection = new Vector2((sr.flipX == false ? 1 : -1), 0);
             if (Input.GetKey(KeyCode.W))
                 dashDirection = new Vector2(0, 1);
@@ -200,28 +206,27 @@ public class PlayerControl : MonoBehaviour {
                 dashDirection.x = 1;
             if (Input.GetKey(KeyCode.A))
                 dashDirection.x = -1;
-            if (Physics2D.gravity.y > 0)
-                dashDirection.y = -dashDirection.y;
+            Instantiate(dash, this.transform.position, Quaternion.Euler(0,0,Vector2.SignedAngle(Vector2.up,dashDirection)),this.transform);
             canControlMove = true;
             canControlJump = false;
             canDash = false;
             isDashing = true;
+            dashJump = true;
             StartCoroutine(Dashing());
         }
 
         if (isDashing)
         {
-            canDash = false;
             if (spawntime >= 0.05f)
             {
                 GameObject temp = Instantiate(phantom, this.transform.position, Quaternion.identity);
                 temp.GetComponent<SpriteRenderer>().sprite = sr.sprite;
                 temp.GetComponent<SpriteRenderer>().flipX = sr.flipX;
                 temp.transform.rotation = this.transform.rotation;
-                spawntime = 0;
+                spawntime -= 0.05f;
             }
             velocity = dashDirection.normalized * 30;
-            spawntime += Time.deltaTime;
+            spawntime += Time.fixedDeltaTime;
         }
         return velocity;
     }
@@ -229,15 +234,9 @@ public class PlayerControl : MonoBehaviour {
     IEnumerator Dashing()
     {
         yield return new WaitForSecondsRealtime(0.15f);
-        if(canControlMove == true && isDashing == true)
+        if(canControlMove == true && isDashing == true && dashJump == false)
             rb.velocity = dashDirection.normalized * 10;
         isDashing = false;
-    }
-
-    public IEnumerator DashReset()
-    {
-        yield return new WaitForSecondsRealtime(0.05f);
-        canDash = true;
     }
 
     bool IsDead()
@@ -269,18 +268,20 @@ public class PlayerControl : MonoBehaviour {
             onGround = true;
             canJump = true;
             canControlMove = true;
-            if (isDashing == false)
+            if (canReset == true && isDashing == false && canDash == false)
+            {
+                onGround = false;
                 StartCoroutine(DashReset());
+            }
         }
         else
         {
-            canJump = false;
-            onGround = false;
+            StartCoroutine(ApplyCollisionChange());
         }
         wallVector = (sr.flipX == false) ? Vector2.right : Vector2.left;
-        RaycastHit2D wallhit = Physics2D.Raycast(this.transform.position, wallVector, 0.6f, ~((1 << 9) | (1 << 8))), 
-                     backwall = Physics2D.Raycast(this.transform.position, -wallVector, 0.6f, ~((1 << 9) | (1 << 8))),
-                     upwall = Physics2D.Raycast(new Vector2(this.transform.position.x, this.transform.position.y + 0.1f), wallVector, 0.6f, ~((1 << 9) | (1 << 2)));
+        RaycastHit2D wallhit = Physics2D.Raycast(this.transform.position, wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2))), 
+                     backwall = Physics2D.Raycast(this.transform.position, -wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2))),
+                     upwall = Physics2D.Raycast(new Vector2(this.transform.position.x, this.transform.position.y + 0.1f), wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2)));
         onWall = (wallhit.collider != null && wallhit.collider.isTrigger == false) ? true : false;
         backWall = (backwall.collider != null && backwall.collider.isTrigger == false) ? true : false;
         upWall = (upwall.collider != null && upwall.collider.isTrigger == false) ? true : false;
@@ -312,5 +313,21 @@ public class PlayerControl : MonoBehaviour {
     {
         yield return new WaitUntil(() => onGround == true);
         isTransitioning = false;
+    }
+
+    IEnumerator ApplyCollisionChange()
+    {
+        yield return new WaitForSeconds(0.1f);
+        canJump = false;
+        onGround = false;
+        dashJump = false;
+    }
+
+    IEnumerator DashReset()
+    {
+        canReset = false;
+        yield return new WaitForSeconds(0.1f);
+        canDash = true;
+        canReset = true;
     }
 }

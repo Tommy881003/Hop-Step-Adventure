@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 5620194590010382524}
   - component: {fileID: 1483298011379658447}
   - component: {fileID: 4795782585142779457}
+  - component: {fileID: 947781185555449215}
   m_Layer: 0
   m_Name: ToggleBlock
   m_TagString: Multisprites
@@ -227,3 +228,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   level: 0
+--- !u!58 &947781185555449215
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8007485930387670673}
+  m_Enabled: 0
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.35

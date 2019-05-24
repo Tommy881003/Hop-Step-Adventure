@@ -15,7 +15,9 @@ GameObject:
   - component: {fileID: 2167376888495535861}
   - component: {fileID: 2167376888495535850}
   - component: {fileID: 5446901773939827351}
-  m_Layer: 0
+  - component: {fileID: 5691474200864550191}
+  - component: {fileID: 5172095307912030653}
+  m_Layer: 10
   m_Name: LaserCrystal
   m_TagString: Laser
   m_Icon: {fileID: 0}
@@ -195,7 +197,6 @@ MonoBehaviour:
   isActivate: 1
   isMove: 1
   MoveSpeed: 0
-  pingpong: {x: 0, y: 0}
 --- !u!95 &2167376888495535861
 Animator:
   serializedVersion: 3
@@ -248,3 +249,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65d02a3b2ab743e4999b7fbe3943fcef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!58 &5691474200864550191
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2167376888495535860}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
+--- !u!114 &5172095307912030653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2167376888495535860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16a3ff52d6d47ad468a9d24681e70994, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  level: 0

@@ -7,6 +7,7 @@ public class ToggleBlock : MonoBehaviour {
     public int currentState;
     private int initial;
     private BoxCollider2D box;
+    private CircleCollider2D circle;
     private PlayerControl player;
     private SpritePicker picker;
     private SpriteRenderer render;
@@ -15,18 +16,21 @@ public class ToggleBlock : MonoBehaviour {
 	void Start ()
     {
         box = this.GetComponent<BoxCollider2D>();
+        circle = this.GetComponent<CircleCollider2D>();
         picker = this.GetComponent<SpritePicker>();
         animator = this.GetComponent<Animator>();
         render = this.GetComponent<SpriteRenderer>();
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
-        if (box.isTrigger)
+        if (box.enabled == false)
         {
+            circle.enabled = false;
             currentState = 0;
             this.gameObject.layer = 2;
             render.sortingLayerName = "HighBackground";
         }
         else
         {
+            circle.enabled = true;
             currentState = 1;
             this.gameObject.layer = 0;
             render.sortingLayerName = "Foreground";
@@ -44,13 +48,15 @@ public class ToggleBlock : MonoBehaviour {
             currentState = (currentState + 1) % 2;
             if (currentState == 0)
             {
-                box.isTrigger = true;
+                box.enabled = false;
+                circle.enabled = false;
                 this.gameObject.layer = 2;
                 render.sortingLayerName = "HighBackground";
             }
             else
             {
-                box.isTrigger = false;
+                box.enabled = true;
+                circle.enabled = true;
                 this.gameObject.layer = 0;
                 render.sortingLayerName = "Foreground";
             }
@@ -64,21 +70,29 @@ public class ToggleBlock : MonoBehaviour {
 
     IEnumerator Reset()
     {
-        if(player.isTransitioning == true)
+        if(player.dead == true)
             yield return new WaitForSecondsRealtime(0.5f);
         currentState = initial;
         if (currentState == 0)
         {
-            box.isTrigger = true;
+            box.enabled = false;
+            circle.enabled = false;
             this.gameObject.layer = 2;
             render.sortingLayerName = "HighBackground";
         }
         else
         {
-            box.isTrigger = false;
+            box.enabled = true;
+            circle.enabled = true;
             this.gameObject.layer = 0;
             render.sortingLayerName = "Foreground";
         }
         picker.SimplePick(currentState);
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Player")
+            player.dead = true;
     }
 }

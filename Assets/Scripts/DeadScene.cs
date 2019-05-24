@@ -30,13 +30,15 @@ public class DeadScene : MonoBehaviour
 
     IEnumerator Scene()
     {
-        animator.SetTrigger("Dead");
         yield return new WaitForSecondsRealtime(0.5f);
-        player.transform.position = control.spawnPos;
+        animator.SetTrigger("Dead");
         control.dead = false;
         control.enabled = false;
+        player.GetComponent<SpriteRenderer>().enabled = false;
+        player.transform.position = control.spawnPos;
         once = true;
         yield return new WaitForSecondsRealtime(0.6f);
         control.enabled = true;
+        player.GetComponent<SpriteRenderer>().enabled = true;
     }
 }

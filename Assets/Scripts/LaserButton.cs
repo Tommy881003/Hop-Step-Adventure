@@ -27,7 +27,7 @@ public class LaserButton : MonoBehaviour {
 	void Update ()
     {
         animator.SetBool("Press", press);
-        if (player.dead == true ||player.isTransitioning == true)
+        if (player.dead == true || player.isTransitioning == true)
             StartCoroutine(Reset());
 	}
 
@@ -41,12 +41,13 @@ public class LaserButton : MonoBehaviour {
                 foreach(GameObject temp in crystalAndButton)
                 { 
                     LaserButton laserButton = temp.GetComponent<LaserButton>();
-                    if(laserButton != null)
+                    if(laserButton != null && laserButton.enabled == true)
                         laserButton.press = !laserButton.press;
                     else
                     {
                         Line line = temp.GetComponent<Line>();
-                        line.isActivate = !line.isActivate;
+                        if(line != null && line.enabled == true)
+                            line.isActivate = !line.isActivate;
                     }
                 }
             }

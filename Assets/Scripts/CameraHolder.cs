@@ -21,7 +21,7 @@ public class CameraHolder : MonoBehaviour {
         once = true;
         shakeing = false;
         isTransitioning = false;
-        if(pos.testMode == true)
+        if (pos != null && pos.testMode == true)
         {
             corner = pos.corner;
             corner2 = pos.corner2;
@@ -38,7 +38,7 @@ public class CameraHolder : MonoBehaviour {
         }
         if(player.dead && once)
         {
-            cam.DOShakePosition(0.5f, 0.25f);
+            cam.DOShakePosition(0.3f, 0.1f);
             once = false;
             StartCoroutine(ResetOnce());
         }

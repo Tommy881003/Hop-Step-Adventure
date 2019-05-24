@@ -1,29 +1,29 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class Line : MonoBehaviour
 {
+    private Vector3 Pos;
     private LineRenderer lr;
     private Rigidbody2D rb;
     public GameObject blob;
-    public bool isActivate;
-    public bool isMove;
+    public bool isActivate, isMove;
     public int MoveSpeed;
-    public Vector2 pingpong;
+    private int rotation;
+    private Vector2 dir, dirRecord, velocity;
     private bool initial;
     private PlayerControl player;
     private float t = 0;
     private Vector2 blobPosA,blobPosB,rayDir;
     private GameObject BlobA, BlobB;
-    private int rotation;
-    private int ping = 1;
-    private Vector2 velocity;
 
     // Start is called before the first frame update
     void Start()
     {
         this.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, -1);
+        Pos = this.transform.position;
         initial = isActivate;
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
         lr = this.GetComponent<LineRenderer>();
@@ -33,56 +33,42 @@ public class Line : MonoBehaviour
         {
             case 0:
                 rayDir = Vector2.right;
+                dir = Vector2.up;
                 break;
             case 90:
                 rayDir = Vector2.up;
+                dir = Vector2.left;
                 break;
             case 180:
                 rayDir = Vector2.left;
+                dir = Vector2.down;
                 break;
             default:
                 rayDir = Vector2.down;
+                dir = Vector2.right;
                 break;
         }
         blobPosA = this.transform.position;
         blobPosB = this.transform.position;
         BlobA = Instantiate(blob,blobPosA,Quaternion.identity);
         BlobB = Instantiate(blob,blobPosB,Quaternion.identity);
+        dirRecord = dir;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
         lr.enabled = isActivate;
         BlobA.SetActive(isActivate);
         BlobB.SetActive(isActivate);
         if (player.dead == true || player.isTransitioning == true)
-            StartCoroutine(Reset());
+            StartCoroutine(Reset(player.isTransitioning));
         if (isMove == true && isActivate == true)
         {
-            if (rotation == 0 || rotation == 180)
-            {
-                if(ping == 1)
-                    velocity.y = -MoveSpeed;
-                else
-                    velocity.y = MoveSpeed;
-                if (this.transform.position.y >= Mathf.Max(pingpong.x, pingpong.y))
-                    ping = 1;
-                else if (this.transform.position.y <= Mathf.Min(pingpong.x, pingpong.y))
-                    ping = -1;
-            }
-            else
-            {
-                if (ping == 1)
-                    velocity.x = -MoveSpeed;
-                else
-                    velocity.x = MoveSpeed;
-                if (this.transform.position.x >= Mathf.Max(pingpong.x, pingpong.y))
-                    ping = 1;
-                else if (this.transform.position.x <= Mathf.Min(pingpong.x, pingpong.y))
-                    ping = -1;
-            }
+            velocity = MoveSpeed * dir;
             rb.velocity = velocity;
+            RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)rayDir * 0.01f, velocity.normalized, 0.5f, ~((1 << 10) | (1 << 2)));
+            if (hit.collider != null && hit.collider.isTrigger == false)
+                dir = -dir;
         }
         else
         {
@@ -91,19 +77,25 @@ public class Line : MonoBehaviour
         }
         if (isActivate == true)
         {
+            t += Time.fixedDeltaTime;
+            float scale = (float)(Mathf.Sin(40 * t) * 0.075f + 0.6f);
+            lr.widthMultiplier = (float)(Mathf.Sin(40 * t) * 0.04f + 0.4f);
+            BlobA.transform.localScale = new Vector3(scale, scale);
+            BlobB.transform.localScale = new Vector3(scale, scale);
+
             bool dohit = false;
             lr.SetPosition(0, transform.position);
             Vector2 LimitPos = (Vector2)transform.position + rayDir * 100;
-            RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)rayDir * 0.01f, rayDir, 100);
+            RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)rayDir * 0.01f, rayDir, 100, ~((1 << 10) | (1 << 2)));
             if (hit.collider != null && hit.collider.isTrigger == false)
             {
                 lr.SetPosition(1, hit.point);
                 BlobA.transform.position = new Vector3(hit.point.x, hit.point.y, -9);
                 dohit = true;
-                if(hit.collider.gameObject.tag == "Player")
+                if (hit.collider.gameObject.tag == "Player")
                 {
                     player.dead = true;
-                    StartCoroutine(Reset());
+                    StartCoroutine(Reset(false));
                 }
             }
             if (dohit == false)
@@ -115,21 +107,22 @@ public class Line : MonoBehaviour
         }
     }
 
-    private void FixedUpdate()
+    IEnumerator Reset(bool fast)
     {
-        if(isActivate)
+        if(fast)
+            yield return new WaitForSecondsRealtime(0);
+        else
+            yield return new WaitForSecondsRealtime(0.5f);
+        isActivate = initial;
+        if(isMove)
         {
-            t += Time.fixedDeltaTime;
-            float scale = (float)(Mathf.Sin(40 * t) * 0.075f + 0.6f);
-            lr.widthMultiplier = (float)(Mathf.Sin(40 * t) * 0.04f + 0.4f);
-            BlobA.transform.localScale = new Vector3(scale, scale);
-            BlobB.transform.localScale = new Vector3(scale, scale);
+            this.transform.position = Pos;
+            dir = dirRecord;
         }
     }
 
-    IEnumerator Reset()
+    private void OnDisable()
     {
-        yield return new WaitForSecondsRealtime(0.5f);
-        isActivate = initial;
+        this.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
     }
 }

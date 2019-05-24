@@ -46,7 +46,7 @@ public class Spring : MonoBehaviour {
             if (jumpX != 0)
                 player.canControlMove = false;
             player.isDashing = false;
-            StartCoroutine(player.DashReset());
+            StartCoroutine(DashReset(player));
             rb.velocity = new Vector2(jumpX,jumpY);
         }
     }
@@ -61,7 +61,7 @@ public class Spring : MonoBehaviour {
             if (jumpX != 0)
                 player.canControlMove = false;
             player.isDashing = false;
-            StartCoroutine(player.DashReset());
+            StartCoroutine(DashReset(player));
             rb.velocity = new Vector2(jumpX, jumpY);
         }
     }
@@ -73,5 +73,11 @@ public class Spring : MonoBehaviour {
             animator.SetBool("PlayerPress", false);
         }
 
+    }
+
+    IEnumerator DashReset(PlayerControl player)
+    {
+        yield return new WaitForSeconds(0.2f);
+        player.canDash = true;
     }
 }

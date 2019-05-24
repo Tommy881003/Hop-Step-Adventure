@@ -18,6 +18,7 @@ public class MapEditor : Editor
 
         //Load all prefabs as objects from the 'Prefabs' folder
         Object[] obj = Resources.LoadAll("Prefabs", typeof(GameObject));
+        
 
         //initialize the game object array
         prefabs = new GameObject[obj.Length];
@@ -87,6 +88,10 @@ public class MapEditor : Editor
         {
             string prefabName = selectedPrefab.name;
             GUILayout.Box(prefabName);
+        }
+        if (selectedPrefab != null && selectedPrefab.GetComponent<Interactable>() != null)
+        {
+            selectedPrefab.GetComponent<Interactable>().level = EditorGUILayout.IntField("Level Index", selectedPrefab.GetComponent<Interactable>().level);
         }
         GUILayout.EndHorizontal();
 
@@ -194,6 +199,7 @@ public class MapEditor : Editor
     {
         GameObject go = (GameObject)Instantiate(selectedPrefab, new Vector3(_spawnPosition.x, _spawnPosition.y, 0), Quaternion.Euler(0,0,rotationDegree));
         go.name = selectedPrefab.name;
-        go.transform.parent = input.levelParent.transform;
+        if (input.levelParent != null && go.name != "Player" && go.name != "TransitionBlock")
+            go.transform.SetParent(input.levelParent.transform);
     }
 }
