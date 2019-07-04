@@ -6,12 +6,11 @@ public class Refill : MonoBehaviour
 {
     private PlayerControl player;
     private Animator anim;
-    private Vector2 position;
     private SpriteRenderer sr;
     private CircleCollider2D cc;
-    private ParticleSystem ps;
+    [SerializeField]
+    private ParticleSystem ps, eat;
     private Light point;
-    private GameObject outline;
     public bool once = true;
 
     // Start is called before the first frame update
@@ -19,18 +18,15 @@ public class Refill : MonoBehaviour
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
         anim = this.GetComponent<Animator>();
-        position = this.transform.position;
         sr = this.GetComponent<SpriteRenderer>();
         cc = this.GetComponent<CircleCollider2D>();
-        ps = this.GetComponentInChildren<ParticleSystem>();
         point = this.GetComponentInChildren<Light>();
-        outline = this.transform.Find("Outline").gameObject;
         cc.enabled = true;
     }
 
     private void Update()
     {
-        if (player.dead && once)
+        if ((player.dead || player.isTransitioning) && once)
         {
             StartCoroutine(Appear(true));
             once = false;
@@ -47,6 +43,7 @@ public class Refill : MonoBehaviour
                 sr.enabled = false;
                 cc.enabled = false;
                 point.enabled = false;
+                eat.Play();
                 ps.Clear();
                 ps.Stop();
                 anim.SetTrigger("Halt");
@@ -59,15 +56,27 @@ public class Refill : MonoBehaviour
     {
         if(fast)
         {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds((player.isTransitioning)? 0 : 1);
             once = true;
+            sr.enabled = true;
+            cc.enabled = true;
+            point.enabled = true;
+            ps.Play();
+            anim.SetBool("Init",once);
+            yield return new WaitForEndOfFrame();
+            anim.SetBool("Init", false);
         }
         else
+        {
             yield return new WaitForSeconds(3);
-        sr.enabled = true;
-        cc.enabled = true;
-        point.enabled = true;
-        ps.Play();
-        anim.SetTrigger("Appear");
+            sr.enabled = true;
+            cc.enabled = true;
+            point.enabled = true;
+            ps.Play();
+            anim.SetTrigger("Appear");
+            anim.ResetTrigger("Halt");
+            yield return new WaitForEndOfFrame();
+            anim.ResetTrigger("Appear");
+        }   
     }
 }

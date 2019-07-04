@@ -11,6 +11,7 @@ public class Line : MonoBehaviour
     public GameObject blob;
     public bool isActivate, isMove;
     public int MoveSpeed;
+    private float hitDist;
     private int rotation;
     private Vector2 dir, dirRecord, velocity;
     private bool initial;
@@ -50,9 +51,11 @@ public class Line : MonoBehaviour
         }
         blobPosA = this.transform.position;
         blobPosB = this.transform.position;
-        BlobA = Instantiate(blob,blobPosA,Quaternion.identity);
-        BlobB = Instantiate(blob,blobPosB,Quaternion.identity);
+        BlobA = Instantiate(blob,blobPosA,Quaternion.identity,this.transform);
+        BlobB = Instantiate(blob,blobPosB,Quaternion.identity,this.transform);
         dirRecord = dir;
+        if (isMove)
+            hitDist = Mathf.Abs(MoveSpeed / 20f);
     }
 
     private void Update()
@@ -66,7 +69,7 @@ public class Line : MonoBehaviour
         {
             velocity = MoveSpeed * dir;
             rb.velocity = velocity;
-            RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)rayDir * 0.01f, velocity.normalized, 0.5f, ~((1 << 10) | (1 << 2)));
+            RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)rayDir * 0.01f, velocity.normalized, hitDist, ~((1 << 10) | (1 << 2) | (1 << 11)));
             if (hit.collider != null && hit.collider.isTrigger == false)
                 dir = -dir;
         }
@@ -78,15 +81,15 @@ public class Line : MonoBehaviour
         if (isActivate == true)
         {
             t += Time.fixedDeltaTime;
-            float scale = (float)(Mathf.Sin(40 * t) * 0.075f + 0.6f);
-            lr.widthMultiplier = (float)(Mathf.Sin(40 * t) * 0.04f + 0.4f);
+            float scale = (Mathf.Sin(40 * t) * 0.075f + 0.6f);
+            lr.widthMultiplier = (Mathf.Sin(40 * t) * 0.04f + 0.4f);
             BlobA.transform.localScale = new Vector3(scale, scale);
             BlobB.transform.localScale = new Vector3(scale, scale);
 
             bool dohit = false;
             lr.SetPosition(0, transform.position);
             Vector2 LimitPos = (Vector2)transform.position + rayDir * 100;
-            RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)rayDir * 0.01f, rayDir, 100, ~((1 << 10) | (1 << 2)));
+            RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)rayDir * 0.01f, rayDir, 200, ~((1 << 10) | (1 << 2) | (1 << 11)));
             if (hit.collider != null && hit.collider.isTrigger == false)
             {
                 lr.SetPosition(1, hit.point);
@@ -112,7 +115,7 @@ public class Line : MonoBehaviour
         if(fast)
             yield return new WaitForSecondsRealtime(0);
         else
-            yield return new WaitForSecondsRealtime(0.5f);
+            yield return new WaitForSecondsRealtime(0.8f);
         isActivate = initial;
         if(isMove)
         {

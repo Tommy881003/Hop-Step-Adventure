@@ -43,9 +43,13 @@ public class Spring : MonoBehaviour {
             animator.SetBool("PlayerPress", true);
             Rigidbody2D rb = collision.gameObject.GetComponent<Rigidbody2D>();
             PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
-            if (jumpX != 0)
-                player.canControlMove = false;
             player.isDashing = false;
+            if (jumpX != 0)
+            {
+                player.canControlMove = false;
+                player.springJump = true;
+                StartCoroutine(player.Spring());
+            }
             StartCoroutine(DashReset(player));
             rb.velocity = new Vector2(jumpX,jumpY);
         }
@@ -58,9 +62,13 @@ public class Spring : MonoBehaviour {
             animator.SetBool("PlayerPress", true);
             Rigidbody2D rb = collision.gameObject.GetComponent<Rigidbody2D>();
             PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
-            if (jumpX != 0)
-                player.canControlMove = false;
             player.isDashing = false;
+            if (jumpX != 0)
+            {
+                player.canControlMove = false;
+                player.springJump = true;
+                StartCoroutine(player.Spring());
+            }
             StartCoroutine(DashReset(player));
             rb.velocity = new Vector2(jumpX, jumpY);
         }
@@ -78,6 +86,7 @@ public class Spring : MonoBehaviour {
     IEnumerator DashReset(PlayerControl player)
     {
         yield return new WaitForSeconds(0.2f);
-        player.canDash = true;
+        if(!player.isDashing)
+            player.canDash = true;
     }
 }

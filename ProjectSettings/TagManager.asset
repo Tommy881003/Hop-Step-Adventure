@@ -6,7 +6,8 @@ TagManager:
   tags:
   - Multisprites
   - Laser
-  - Transition
+  - Level
+  - Map
   layers:
   - Default
   - TransparentFX
@@ -55,4 +56,7 @@ TagManager:
     locked: 0
   - name: Laser
     uniqueID: 1603354519
+    locked: 0
+  - name: Cherry
+    uniqueID: 4249343361
     locked: 0

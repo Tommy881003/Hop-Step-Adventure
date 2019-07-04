@@ -5,49 +5,40 @@ using DG.Tweening;
 
 public class Transition : MonoBehaviour
 {
-    private GameObject player, RU, LD;
+    private GameObject player;
     private Camera cam;
+    private PlayerControl control;
     private CameraHolder holder;
-    public GameObject Phantom;
-    public bool isLR;
-    public Vector2 sceneRightOrUp, sceneRightOrUp2, spawnRightOrUp;
-    public int indexRightOrUp;
-    public Vector2 sceneLeftOrDown, sceneLeftOrDown2, spawnLeftOrDown;
-    public int indexLeftOrDown;
-    private SpriteRenderer sr;
+    private Map map;
+    public Vector2 LevelSize, SpawningPoint;
+    public int spawnIndex;
+    private Vector2 LeftDown, RightUp;
+    [HideInInspector]
+    public int LevelIndex;
+    [HideInInspector]
+    public List<int> link = new List<int>();
+    public List<Vector2> Spawn = new List<Vector2>();
+
 
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
+        control = player.GetComponent<PlayerControl>();
         cam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         holder = cam.GetComponent<CameraHolder>();
-        sr = this.GetComponent<SpriteRenderer>();
-        sr.enabled = false;
-        if (isLR)
-            this.transform.localScale = new Vector3(0.05f, this.transform.localScale.y, this.transform.localScale.z);
-        else
-            this.transform.localScale = new Vector3(this.transform.localScale.x, 0.05f, this.transform.localScale.z);
-        RU = this.transform.Find("RightOrUp").gameObject;
-        RU.transform.position = (sceneRightOrUp + sceneRightOrUp2) / 2;
-        RU.transform.parent = null;
-        RU.transform.localScale = new Vector3(Mathf.Abs(sceneRightOrUp.x - sceneRightOrUp2.x) + 40, Mathf.Abs(sceneRightOrUp.y - sceneRightOrUp2.y) + 22.5f, 1);
-        RU.transform.parent = this.transform;
-        RU.GetComponent<SpriteRenderer>().enabled = false;
-        LD = this.transform.Find("LeftOrDown").gameObject;
-        LD.transform.position = (sceneLeftOrDown + sceneLeftOrDown2) / 2;
-        LD.transform.parent = null;
-        LD.transform.localScale = new Vector3(Mathf.Abs(sceneLeftOrDown.x - sceneLeftOrDown2.x) + 40, Mathf.Abs(sceneLeftOrDown.y - sceneLeftOrDown2.y) + 22.5f, 1);
-        LD.transform.parent = this.transform;
-        LD.GetComponent<SpriteRenderer>().enabled = false;
+        map = GameObject.FindGameObjectWithTag("Map").GetComponent<Map>();
+        LeftDown = new Vector2(this.transform.position.x - (0.5f * (LevelSize.x - 40f)), this.transform.position.y - (0.5f * (LevelSize.y - 22)));
+        RightUp = new Vector2(this.transform.position.x + (0.5f * (LevelSize.x - 40f)), this.transform.position.y + (0.5f * (LevelSize.y - 22)));
+        if (LevelIndex != control.currentLevel && link.Exists(x => x == control.currentLevel) == false)
+            this.gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.tag == "Player")
-        {
+        PlayerControl control = player.GetComponent<PlayerControl>();
+        if (collision.gameObject.tag == "Player" && control.currentLevel != LevelIndex)
             StartCoroutine(MakeTransition());
-        }
     }
 
     IEnumerator MakeTransition()
@@ -55,160 +46,176 @@ public class Transition : MonoBehaviour
         Vector2 playerPos = player.transform.position;
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
         PlayerControl control = player.GetComponent<PlayerControl>();
+        bool isUp = false;
+
+        control.canDash = true;
+        control.SetAnimAndFlip();
         holder.isTransitioning = true;
-        holder.shakeing = true;
-        if (control.currentLevel == indexRightOrUp)
+        holder.enabled = false;
+        cam.transform.DOMove(CamPos(playerPos), 0.75f).SetUpdate(true);
+
+        map.levels[control.currentLevel].GetComponent<Transition>().close(LevelIndex);
+
+        if (holder.corner2.y < LeftDown.y - 21f)
         {
-            if (isLR)
-                player.transform.DOMove(new Vector3(playerPos.x - 1.5f, playerPos.y, 0), 0.5f).SetUpdate(true);
-            cam.transform.DOMove(new Vector3(sceneLeftOrDown.x, sceneLeftOrDown.y, -10), 0.75f).SetUpdate(true);
-            if(holder.pos.testMode == true)
-            {
-                holder.pos.corner = sceneLeftOrDown;
-                holder.pos.corner2 = sceneLeftOrDown2;
-                control.pos.currentLevel = indexLeftOrDown;
-                control.pos.spawnPos = spawnLeftOrDown;
-            }
-            control.currentLevel = indexLeftOrDown;
-            control.spawnPos = spawnLeftOrDown;
+            player.transform.DOMove(new Vector3(playerPos.x, playerPos.y + 1.5f, 0), 0.5f).SetUpdate(true);
+            isUp = true;
         }
-        else
+        else if (holder.corner.y > RightUp.y + 21f)
+            player.transform.DOMove(new Vector3(playerPos.x, playerPos.y - 1.5f, 0), 0.5f).SetUpdate(true);
+        else if (holder.corner2.x < LeftDown.x - 39.5f)
+            player.transform.DOMove(new Vector3(playerPos.x + 1.5f, playerPos.y, 0), 0.5f).SetUpdate(true);
+        else if(holder.corner.x > RightUp.x + 39.5f)
+            player.transform.DOMove(new Vector3(playerPos.x - 1.5f, playerPos.y, 0), 0.5f).SetUpdate(true);
+
+        Vector2 toSpawn = new Vector2();
+        float distance = 1000;
+        foreach(Vector2 spawnPoint in Spawn)
         {
-            if (isLR)
-                player.transform.DOMove(new Vector3(playerPos.x + 1.5f, playerPos.y, 0), 0.5f).SetUpdate(true);
-            cam.transform.DOMove(new Vector3(sceneRightOrUp.x, sceneRightOrUp.y, -10), 0.75f).SetUpdate(true);
-            if (holder.pos.testMode == true)
+            Vector2 dis = new Vector2(spawnPoint.x + this.transform.position.x, spawnPoint.y + this.transform.position.y);
+            float temp = (dis - playerPos).magnitude;
+            if (temp < distance)
             {
-                holder.pos.corner = sceneRightOrUp;
-                holder.pos.corner2 = sceneRightOrUp2;
-                control.pos.currentLevel = indexRightOrUp;
-                control.pos.spawnPos = spawnRightOrUp;
+                distance = temp;
+                toSpawn = spawnPoint;
             }
-            control.currentLevel = indexRightOrUp;
-            control.spawnPos = spawnRightOrUp;      
         }
+        holder.corner = LeftDown;
+        holder.corner2 = RightUp;
         control.isTransitioning = true;
-        if (control.currentLevel == indexRightOrUp)
+        control.currentLevel = LevelIndex;
+        control.spawnPos = toSpawn + new Vector2(this.transform.position.x,this.transform.position.y);
+        control.enabled = false;
+        if (holder.pos != null && holder.pos.testMode == true)
         {
-            holder.corner = sceneRightOrUp;
-            holder.corner2 = sceneRightOrUp2;
+            holder.pos.corner = LeftDown;
+            holder.pos.corner2 = RightUp;
+            control.pos.currentLevel = LevelIndex;
+            control.pos.spawnPos = toSpawn + new Vector2(this.transform.position.x, this.transform.position.y);
         }
-        else
-        {
-            holder.corner = sceneLeftOrDown;
-            holder.corner2 = sceneLeftOrDown2;
-        }
+        open();
         Time.timeScale = 0;
+
         yield return new WaitForSecondsRealtime(1);
+
         Time.timeScale = 1;
-        if (isLR == false)
+        control.enabled = true;
+        holder.enabled = true;
+
+        if (isUp)
         {
-            if (control.currentLevel == indexRightOrUp)
-            {
-                if (control.isDashing == true)
-                    control.isDashing = false;
-                rb.velocity = new Vector2(rb.velocity.x, 22.5f);
-            }
-        }
-        if (isLR)
-            control.isTransitioning = false;
-        else
+            rb.velocity = new Vector2(0.5f * rb.velocity.x, 17.5f);
             StartCoroutine(control.EndTransition());
-        holder.shakeing = false;
+        }
+        else
+            control.isTransitioning = false;
     }
 
-    public void Show()
+    public Vector3 CamPos(Vector2 playerPos)
     {
-        Transform[] transforms = this.gameObject.GetComponentsInChildren<Transform>();
-        foreach (Transform child in transforms)
+        LeftDown = new Vector2(this.transform.position.x - (0.5f * (LevelSize.x - 40f)), this.transform.position.y - (0.5f * (LevelSize.y - 22)));
+        RightUp = new Vector2(this.transform.position.x + (0.5f * (LevelSize.x - 40f)), this.transform.position.y + (0.5f * (LevelSize.y - 22)));
+        Vector3 Pos = new Vector3(0, 0, -10);
+        if (playerPos.x < LeftDown.x - 19.5f)
+            Pos.x = LeftDown.x;
+        else if (playerPos.x > RightUp.x + 19.5f)
+            Pos.x = RightUp.x;
+        else
+            Pos.x = Mathf.Clamp(playerPos.x, LeftDown.x, RightUp.x);
+        if (playerPos.y < LeftDown.y - 11f)
+            Pos.y = LeftDown.y;
+        else if (playerPos.y > RightUp.y + 11f)
+            Pos.y = RightUp.y;
+        else
+            Pos.y = Mathf.Clamp(playerPos.y, LeftDown.y, RightUp.y);
+        return Pos;
+    }
+
+    void open()
+    {
+        foreach(int i in link)
         {
-            if (child.gameObject.name == "RightOrUp")
-            {
-                child.GetComponent<SpriteRenderer>().enabled = true;
-                child.transform.position = (sceneRightOrUp + sceneRightOrUp2) / 2;
-                child.transform.parent = null;
-                child.transform.localScale = new Vector3(Mathf.Abs(sceneRightOrUp.x - sceneRightOrUp2.x) + 40, Mathf.Abs(sceneRightOrUp.y - sceneRightOrUp2.y) + 22.5f, 1);
-                child.transform.parent = this.transform;
-            }
-            if (child.gameObject.name == "LeftOrDown")
-            {
-                child.GetComponent<SpriteRenderer>().enabled = true;
-                child.transform.position = (sceneLeftOrDown + sceneLeftOrDown2) / 2;
-                child.transform.parent = null;
-                child.transform.localScale = new Vector3(Mathf.Abs(sceneLeftOrDown.x - sceneLeftOrDown2.x) + 40, Mathf.Abs(sceneLeftOrDown.y - sceneLeftOrDown2.y) + 22.5f, 1);
-                child.transform.parent = this.transform;
-            }
-        }
-            if (this.transform.Find("SpawnRU") == null)
-        {
-            GameObject SpawnRU = Instantiate(Phantom, spawnRightOrUp, Quaternion.identity);
-            SpawnRU.name = "SpawnRU";
-            SpawnRU.transform.SetParent(this.gameObject.transform, true);
-        }
-        if (this.transform.Find("SpawnLD") == null)
-        {
-            GameObject SpawnLD = Instantiate(Phantom, spawnLeftOrDown, Quaternion.identity);
-            SpawnLD.name = "SpawnLD";
-            SpawnLD.transform.SetParent(this.gameObject.transform, true);
+            map.levels[i].SetActive(true);
         }
     }
 
-    public void Kill()
+    public void close(int exception)
     {
-        if (this.gameObject.GetComponentsInChildren<Transform>() == null)
-            return;
-        Transform[] transforms = this.gameObject.GetComponentsInChildren<Transform>();
-        foreach (Transform child in transforms)
+        foreach (int i in link)
         {
-            if (child.gameObject.name == "SpawnRU" || child.gameObject.name == "SpawnLD")
-                GameObject.DestroyImmediate(child.gameObject);
-            else if (child.gameObject != this.gameObject)
-                child.gameObject.GetComponent<SpriteRenderer>().enabled = false;
+            if(i != exception)
+                map.levels[i].SetActive(false);
         }
     }
 
-    public void modify()
+    public void apply(int option)
     {
-        Transform[] transforms = this.gameObject.GetComponentsInChildren<Transform>();
-        foreach (Transform child in transforms)
+        BoxCollider2D collider = this.GetComponent<BoxCollider2D>();
+        collider.size = LevelSize;
+        GameObject level = this.transform.Find("LevelCarrier").gameObject;
+        float halfX = (LevelSize.x - 40f) * 0.5f, halfY = (LevelSize.y - 22f) * 0.5f;
+        switch(option)
         {
-            if (child.gameObject.name == "RightOrUp")
-            {
-                child.transform.position = (sceneRightOrUp + sceneRightOrUp2) / 2;
-                child.transform.parent = null;
-                child.transform.localScale = new Vector3(Mathf.Abs(sceneRightOrUp.x - sceneRightOrUp2.x) + 40, Mathf.Abs(sceneRightOrUp.y - sceneRightOrUp2.y) + 22.5f, 1);
-                child.transform.parent = this.transform;
-            }
-            if(child.gameObject.name == "LeftOrDown")
-            {
-                child.transform.position = (sceneLeftOrDown + sceneLeftOrDown2) / 2;
-                child.transform.parent = null;
-                child.transform.localScale = new Vector3(Mathf.Abs(sceneLeftOrDown.x - sceneLeftOrDown2.x) + 40, Mathf.Abs(sceneLeftOrDown.y - sceneLeftOrDown2.y) + 22.5f, 1);
-                child.transform.parent = this.transform;
-            }
-            if (child.gameObject.name == "SpawnRU")
-                child.transform.position = spawnRightOrUp;
-            if (child.gameObject.name == "SpawnLD")
-                child.transform.position = spawnLeftOrDown;
+            case 1:
+                level.transform.localPosition = new Vector3(-halfX, -halfY, 0);
+                break;
+            case 2:
+                level.transform.localPosition = new Vector3(-halfX, halfY, 0);
+                break;
+            case 3:
+                level.transform.localPosition = new Vector3(halfX, -halfY, 0);
+                break;
+            case 4:
+                level.transform.localPosition = new Vector3(halfX, halfY, 0);
+                break;
+            default:
+                level.transform.localPosition = Vector3.zero;
+                break;
         }
     }
 
-    public void Set(int input)//0 for RU 1 for LD
+    public void ResetSize(Vector2 size)
     {
-        PlayerControl control = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
-        if(input == 0)
+        LevelSize = size;
+    }
+
+    public void FixEdge()
+    {
+        float halfX = (LevelSize.x - 1) / 2, halfY = (LevelSize.y - 1) / 2;
+        for(float i = -halfX; i <= halfX; i ++)
         {
-            control.pos.corner = sceneRightOrUp;
-            control.pos.corner2 = sceneRightOrUp2;
-            control.pos.currentLevel = indexRightOrUp;
-            control.pos.spawnPos = spawnRightOrUp;
+            RaycastHit2D upHit = Physics2D.Raycast(new Vector2(this.transform.position.x + i, this.transform.position.y + halfY), Vector2.zero);
+            RaycastHit2D downHit = Physics2D.Raycast(new Vector2(this.transform.position.x + i, this.transform.position.y - halfY), Vector2.zero);
+            if (upHit.collider != null && upHit.collider.gameObject.GetComponent<Multisprites>() != null)
+                upHit.collider.gameObject.GetComponent<SpritePicker>().PickSprite(upHit.collider.gameObject.name);
+            if (downHit.collider != null && downHit.collider.gameObject.GetComponent<Multisprites>() != null)
+                downHit.collider.gameObject.GetComponent<SpritePicker>().PickSprite(downHit.collider.gameObject.name);
         }
-        else if(input == 1)
+        for (float i = -halfY; i <= halfY; i++)
         {
-            control.pos.corner = sceneLeftOrDown;
-            control.pos.corner2 = sceneLeftOrDown2;
-            control.pos.currentLevel = indexLeftOrDown;
-            control.pos.spawnPos = spawnLeftOrDown;
+            RaycastHit2D leftHit = Physics2D.Raycast(new Vector2(this.transform.position.x - halfX, this.transform.position.y + i), Vector2.zero);
+            RaycastHit2D rightHit = Physics2D.Raycast(new Vector2(this.transform.position.x + halfX, this.transform.position.y + i), Vector2.zero);
+            if (leftHit.collider != null && leftHit.collider.gameObject.GetComponent<Multisprites>() != null)
+                leftHit.collider.gameObject.GetComponent<SpritePicker>().PickSprite(leftHit.collider.gameObject.name);
+            if (rightHit.collider != null && rightHit.collider.gameObject.GetComponent<Multisprites>() != null)
+                rightHit.collider.gameObject.GetComponent<SpritePicker>().PickSprite(rightHit.collider.gameObject.name);
         }
+    }
+
+    public void AddSpawn(Vector2 point)
+    {
+        if (Spawn.Exists(x => x == point) == false)
+            Spawn.Add(point);
+    }
+
+    public void ModifySpawn(int index, Vector2 point)
+    {
+        if(Spawn.Exists(x => x == point) == false)
+            Spawn[index] = point;
+    }
+
+    public void RemoveSpawn(int index)
+    {
+        Spawn.RemoveAt(index);
     }
 }

@@ -32,13 +32,20 @@ public class DeadScene : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(0.5f);
         animator.SetTrigger("Dead");
+        yield return new WaitForSecondsRealtime(0.3f);
+        //StartCoroutine(enableControl());
         control.dead = false;
         control.enabled = false;
-        player.GetComponent<SpriteRenderer>().enabled = false;
         player.transform.position = control.spawnPos;
+        control.canDash = true;
         once = true;
-        yield return new WaitForSecondsRealtime(0.6f);
+        yield return new WaitForSecondsRealtime(0.3f);
         control.enabled = true;
-        player.GetComponent<SpriteRenderer>().enabled = true;
+    }
+
+    IEnumerator enableControl()
+    {
+        yield return new WaitForSecondsRealtime(0.8f);
+        control.enabled = true;
     }
 }

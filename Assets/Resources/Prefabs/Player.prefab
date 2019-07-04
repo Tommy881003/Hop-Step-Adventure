@@ -72,7 +72,7 @@ SpriteRenderer:
   m_SortingLayerID: 53236795
   m_SortingLayer: 1
   m_SortingOrder: 20
-  m_Sprite: {fileID: 21300000, guid: 72de0c64f2c6a498096698322c976a67, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ba2f57231d9e96d4dae201799b494175, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -100,7 +100,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.0625, y: 2}
+    oldSize: {x: 3, y: 2}
     newSize: {x: 1.375, y: 2.0625}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -143,21 +143,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dash: {fileID: 1272738255929319399, guid: 3ecc6d9f36c38d247adb3a3b286a23a1, type: 3}
+  jump: {fileID: 2889174342537604686, guid: 795cea65235cc7d488816bb3b8f6df67, type: 3}
   phantom: {fileID: 5395070203798402628, guid: 82b0b9e136f0dd443b555bb54eecf639, type: 3}
+  NoDash: {fileID: 2100000, guid: a84bd8b3809c83c4789ecee2e64fa468, type: 2}
+  pos: {fileID: 0}
+  spawnPos: {x: 0, y: 0}
+  currentLevel: 0
   canJump: 0
+  onWall: 0
+  backWall: 0
+  upWall: 0
   onGround: 0
   canControlJump: 0
+  dashJump: 0
+  canControlMove: 0
+  canReset: 1
   canDash: 0
   isDashing: 0
   isTransitioning: 0
   dead: 0
-  canControlMove: 0
   canCollect: 0
   dashTime: 0
   dashCooldown: 0
-  spawnPos: {x: 0, y: 0}
-  pos: {fileID: 0}
-  currentLevel: 0
 --- !u!95 &1094465376618489279
 Animator:
   serializedVersion: 3

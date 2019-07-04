@@ -41,8 +41,6 @@ public class Loop : MonoBehaviour
                 median = right;
                 right = temp;
             }
-            foreach (GameObject adj in adjust)
-                adj.GetComponent<SpritePicker>().PickSprite("GrassLand");
         }
     }
 }

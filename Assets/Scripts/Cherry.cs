@@ -8,7 +8,6 @@ public class Cherry : MonoBehaviour
     private GameObject player;
     private PlayerControl control;
     private CircleCollider2D cc;
-    private Rigidbody2D rb;
     private ParticleSystem ps;
     private ParticleSystem gain;
     private SpriteRenderer sr;
@@ -22,7 +21,6 @@ public class Cherry : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
         control = player.GetComponent<PlayerControl>();
         cc = this.GetComponent<CircleCollider2D>();
-        rb = this.GetComponent<Rigidbody2D>();
         ps = this.transform.Find("FollowParticle").GetComponent<ParticleSystem>();
         gain = this.transform.Find("GainParticle").GetComponent<ParticleSystem>();
         sr = this.transform.Find("Main").GetComponent<SpriteRenderer>();
@@ -50,6 +48,7 @@ public class Cherry : MonoBehaviour
         {
             touched = true;
             cc.enabled = false;
+            sr.sortingLayerName = "Cherry";
         }
     }
 
@@ -75,6 +74,7 @@ public class Cherry : MonoBehaviour
             once = false;
             touched = false;
             sr.enabled = true;
+            sr.sortingLayerName = "Default";
             StartCoroutine(ResetOnce());
         }
         ps.transform.LookAt(initialPos, Vector3.forward);
@@ -94,6 +94,7 @@ public class Cherry : MonoBehaviour
     {
         sr.enabled = true;
         cc.enabled = true;
+        sr.sortingLayerName = "Default";
     }
 
     IEnumerator GoBack()

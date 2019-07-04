@@ -10,34 +10,29 @@ public class PlayerControl : MonoBehaviour {
     private Animator animator;
     private SpriteRenderer sr;
     public ParticleSystem dash;
+    public ParticleSystem jump;
     public GameObject phantom;
+    public Material NoDash;
+    private Material Normal;
+    public PlayerPosition pos;
 
-    public bool canJump;              //can the player jump now?
-    private bool onWall;
-    private bool backWall;
-    private bool upWall;
-    public bool onGround;
-    public bool canControlJump;
-    public bool dashJump;
-    private float fallGravity = 4.5f;  //control gravity when jumping
-    private float lowGravity = 3f;    //control gravity when jumping
-    private float jumpVelocity = 13.5f;
-    private float walkVelocity = 7.5f;
-
-    private bool canReset = true;
-    public bool canDash;              //can the player dash now?
-    public bool isDashing;
-    public bool isTransitioning;
-    public bool dead;
-    public bool canControlMove;
-    public bool canCollect;
-    private Vector2 dashDirection;
-    public float dashTime = 0;
-    public float dashCooldown = 0;
+    [HideInInspector]
+    public Vector2 dashDirection;
     private float spawntime = 0.05f;
     public Vector2 spawnPos;
-    public PlayerPosition pos;
     public int currentLevel = 0;
+
+    [HideInInspector]
+    public bool canJump, onWall, backWall, upWall, onGround, canControlJump, dashJump;
+    public bool springJump, canControlSpring, canControlMove;
+
+    private float fallGravity = 4.5f, lowGravity = 3f, jumpVelocity = 13.5f, walkVelocity = 7.5f;  
+
+    [HideInInspector]
+    public bool canReset = true, canDash, isDashing, isTransitioning, dead, canCollect;
+
+    [HideInInspector]
+    public float dashTime = 0, dashCooldown = 0;
 
     void Start()
     {
@@ -52,6 +47,7 @@ public class PlayerControl : MonoBehaviour {
         rb = this.GetComponent<Rigidbody2D>();
         animator = this.GetComponent<Animator>();
         sr = this.GetComponent<SpriteRenderer>();
+        Normal = sr.material;
         dashDirection = new Vector2(0, 0);
         canJump = false;
         canDash = true;
@@ -64,6 +60,7 @@ public class PlayerControl : MonoBehaviour {
         rb.gravityScale = 2.75f;
         canCollect = true;
         dashJump = false;
+        springJump = false;
     }
 
     // Update is called once per frame
@@ -101,24 +98,45 @@ public class PlayerControl : MonoBehaviour {
             velocity.x = walkVelocity * dir;
         else
         {
-            if (dir == 1)
+            if(springJump && canControlSpring)
             {
-                if (velocity.x <= walkVelocity)
-                    velocity.x += 1.5f;
-                else if (velocity.x >= 12.5f)
-                    velocity.x = 17.5f;
+                if (dir == 1)
+                {
+                    if (velocity.x < 0)
+                        velocity.x *= 0.92f;
+                }
+                else if (dir == -1)
+                {
+                    if (velocity.x > 0)
+                        velocity.x *= 0.92f;
+                }
+                else
+                {
+                    if (Mathf.Abs(velocity.x) >= 5)
+                        velocity.x = velocity.x * 0.95f;
+                }
             }
-            else if (dir == -1)
+            else if(springJump == false)
             {
-                if (velocity.x >= -walkVelocity)
-                    velocity.x -= 1.5f;
-                else if (velocity.x <= -12.5f)
-                    velocity.x = -17.5f;
-            }
-            else
-            {
-                if(Mathf.Abs(velocity.x) >= 5)
-                    velocity.x = velocity.x * 0.95f;
+                if (dir == 1)
+                {
+                    if (velocity.x <= walkVelocity)
+                        velocity.x += 1.5f;
+                    else if (velocity.x >= 12.5f)
+                        velocity.x = 17.5f;
+                }
+                else if (dir == -1)
+                {
+                    if (velocity.x >= -walkVelocity)
+                        velocity.x -= 1.5f;
+                    else if (velocity.x <= -12.5f)
+                        velocity.x = -17.5f;
+                }
+                else
+                {
+                    if (Mathf.Abs(velocity.x) >= 5)
+                        velocity.x = velocity.x * 0.95f;
+                }
             }
         }
         return velocity;
@@ -130,6 +148,7 @@ public class PlayerControl : MonoBehaviour {
         {
             if (canJump == true)
             {
+                Instantiate(jump, new Vector3(this.transform.position.x, this.transform.position.y - 1.2f, this.transform.position.z) , Quaternion.identity, this.transform);
                 canJump = false;
                 canControlJump = true;
                 if (dashJump == true)
@@ -138,7 +157,7 @@ public class PlayerControl : MonoBehaviour {
                     canControlMove = false;
                     dashJump = false;
                     velocity.y = 12f;
-                    velocity.x = 17.5f * Mathf.Sign(velocity.x);
+                    velocity.x = 17.5f * Mathf.Sign(dashDirection.x);
                 }
                 else
                     velocity.y = jumpVelocity;
@@ -176,13 +195,13 @@ public class PlayerControl : MonoBehaviour {
             canControlJump = false;
         if (canJump == true)
             canControlJump = true;
-        if (velocity.y < -35)
-            velocity = new Vector2(velocity.x, -35);
+        if (velocity.y < -20 && isDashing == false)
+            velocity = new Vector2(velocity.x, -20);
         if (canControlJump == true || isTransitioning)
         {
             if (velocity.y < 0)
                 velocity += Vector2.up * Physics2D.gravity.y * (fallGravity) * Time.deltaTime;
-            else if (velocity.y > 0 && (!Input.GetKey(KeyCode.K)))
+            else if ((velocity.y > 0 && (!Input.GetKey(KeyCode.K))) || springJump == true)
                 velocity += Vector2.up * Physics2D.gravity.y * (lowGravity) * Time.deltaTime;
         }
         else
@@ -197,6 +216,7 @@ public class PlayerControl : MonoBehaviour {
     {
         if (Input.GetKeyDown(KeyCode.J) && canDash == true && isDashing == false)
         {
+            Camera.main.GetComponent<RippleEffect>().Emit(Camera.main.WorldToViewportPoint(transform.position));
             dashDirection = new Vector2((sr.flipX == false ? 1 : -1), 0);
             if (Input.GetKey(KeyCode.W))
                 dashDirection = new Vector2(0, 1);
@@ -206,43 +226,53 @@ public class PlayerControl : MonoBehaviour {
                 dashDirection.x = 1;
             if (Input.GetKey(KeyCode.A))
                 dashDirection.x = -1;
-            Instantiate(dash, this.transform.position, Quaternion.Euler(0,0,Vector2.SignedAngle(Vector2.up,dashDirection)),this.transform);
+            ParticleSystem dashParticle = Instantiate(dash, this.transform.position, Quaternion.Euler(0,0,Vector2.SignedAngle(Vector2.up,dashDirection)),this.transform);
             canControlMove = true;
             canControlJump = false;
             canDash = false;
             isDashing = true;
-            dashJump = true;
-            StartCoroutine(Dashing());
+            if(dashDirection.x != 0)
+                dashJump = true;
+            if(dashDirection.y > 0 && onGround && !Input.GetKeyDown(KeyCode.K))
+                Instantiate(jump, new Vector3(this.transform.position.x, this.transform.position.y - 1.2f, this.transform.position.z), Quaternion.identity, this.transform);
+            StartCoroutine(Dashing(dashParticle));
+            StartCoroutine((Phantom(spawntime)));
         }
-
         if (isDashing)
-        {
-            if (spawntime >= 0.05f)
-            {
-                GameObject temp = Instantiate(phantom, this.transform.position, Quaternion.identity);
-                temp.GetComponent<SpriteRenderer>().sprite = sr.sprite;
-                temp.GetComponent<SpriteRenderer>().flipX = sr.flipX;
-                temp.transform.rotation = this.transform.rotation;
-                spawntime -= 0.05f;
-            }
             velocity = dashDirection.normalized * 30;
-            spawntime += Time.fixedDeltaTime;
-        }
         return velocity;
     }
 
-    IEnumerator Dashing()
+    IEnumerator Phantom(float spawn)
+    {
+        GameObject temp = Instantiate(phantom, this.transform.position, Quaternion.identity);
+        temp.GetComponent<SpriteRenderer>().sprite = sr.sprite;
+        temp.GetComponent<SpriteRenderer>().flipX = sr.flipX;
+        temp.transform.rotation = this.transform.rotation;
+        yield return new WaitForSecondsRealtime(spawntime);
+        if (isDashing)
+            StartCoroutine(Phantom(spawn));
+    }
+
+    IEnumerator Dashing(ParticleSystem toKill)
     {
         yield return new WaitForSecondsRealtime(0.15f);
         if(canControlMove == true && isDashing == true && dashJump == false)
             rb.velocity = dashDirection.normalized * 10;
         isDashing = false;
+        yield return new WaitForSecondsRealtime(0.05f);
+        yield return new WaitWhile(() => Mathf.Abs(rb.velocity.x) > 17);
+        var em = toKill.emission;
+        em.enabled = false;
+        yield return new WaitForSecondsRealtime(0.5f);
+        Destroy(toKill);
     }
 
     bool IsDead()
     {
         if (dead)
         {
+            sr.material = Normal;
             animator.SetBool("Dead", dead);
             rb.velocity = Vector2.zero;
             rb.gravityScale = 0;
@@ -262,7 +292,7 @@ public class PlayerControl : MonoBehaviour {
         Vector2 leftfoot, rightfoot, wallVector;
         leftfoot = new Vector2(rb.transform.position.x - 0.3f, rb.transform.position.y - rb.transform.localScale.y -0.01f);
         rightfoot = new Vector2(rb.transform.position.x + 0.3f, rb.transform.position.y - rb.transform.localScale.y - 0.01f);
-        RaycastHit2D lefthit = Physics2D.Raycast(leftfoot, Vector2.down, 0.04f), righthit = Physics2D.Raycast(rightfoot, Vector2.down, 0.04f);
+        RaycastHit2D lefthit = Physics2D.Raycast(leftfoot, Vector2.down, 0.04f, ~((1 << 10) | (1 << 2))), righthit = Physics2D.Raycast(rightfoot, Vector2.down, 0.04f, ~((1 << 10) | (1 << 2)));
         if ((lefthit.collider != null && lefthit.collider.isTrigger == false) || (righthit.collider != null && righthit.collider.isTrigger == false))
         {
             onGround = true;
@@ -274,10 +304,10 @@ public class PlayerControl : MonoBehaviour {
                 StartCoroutine(DashReset());
             }
         }
+        else if(isDashing && Mathf.Sign(dashDirection.y) > 0)
+            StartCoroutine(ApplyCollisionChange(0));
         else
-        {
-            StartCoroutine(ApplyCollisionChange());
-        }
+            StartCoroutine(ApplyCollisionChange(0.1f));
         wallVector = (sr.flipX == false) ? Vector2.right : Vector2.left;
         RaycastHit2D wallhit = Physics2D.Raycast(this.transform.position, wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2))), 
                      backwall = Physics2D.Raycast(this.transform.position, -wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2))),
@@ -287,7 +317,7 @@ public class PlayerControl : MonoBehaviour {
         upWall = (upwall.collider != null && upwall.collider.isTrigger == false) ? true : false;
     }
 
-    void SetAnimAndFlip()
+    public void SetAnimAndFlip()
     {
         if (canControlMove && (onWall == false || !Input.GetKey(KeyCode.L)))
         {
@@ -304,20 +334,26 @@ public class PlayerControl : MonoBehaviour {
                 sr.flipX = true;
         }
 
+        if (canDash)
+            sr.material = Normal;
+        else
+            sr.material = NoDash;
+
         animator.SetFloat("SpeedX", Mathf.Abs(rb.velocity.x));
         animator.SetFloat("SpeedY", rb.velocity.y);
         animator.SetBool("IsJumping", !canJump);
+        animator.SetBool("OnWall", onWall && Input.GetKey(KeyCode.L));
     }
 
     public IEnumerator EndTransition()
     {
-        yield return new WaitUntil(() => onGround == true);
+        yield return new WaitUntil(() => velocity.y <= 0);
         isTransitioning = false;
     }
 
-    IEnumerator ApplyCollisionChange()
+    IEnumerator ApplyCollisionChange(float time)
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(time);
         canJump = false;
         onGround = false;
         dashJump = false;
@@ -329,5 +365,22 @@ public class PlayerControl : MonoBehaviour {
         yield return new WaitForSeconds(0.1f);
         canDash = true;
         canReset = true;
+        dashJump = false;
+    }
+
+    public IEnumerator Spring()
+    {
+        canControlSpring = false;
+        StartCoroutine(SpringControl());
+        yield return new WaitUntil(() => onGround == true || isDashing == true || (Mathf.Abs(rb.velocity.x) < 5 && canControlSpring == true));
+        springJump = false;
+        canControlSpring = false;
+    }
+
+    IEnumerator SpringControl()
+    {
+        yield return new WaitForSeconds(0.2f);
+        if(!(onGround == true || isDashing == true || Mathf.Abs(rb.velocity.x) <= 1))
+            canControlSpring = true;
     }
 }

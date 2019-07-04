@@ -4,14 +4,15 @@ using UnityEngine;
 
 public class ToggleBlock : MonoBehaviour {
 
-    public int currentState;
-    private int initial;
+    public int currentState = 0;
     private BoxCollider2D box;
     private CircleCollider2D circle;
     private PlayerControl player;
     private SpritePicker picker;
     private SpriteRenderer render;
     private Animator animator;
+    private bool isReal;
+    private bool once = true;
 	
 	void Start ()
     {
@@ -24,29 +25,28 @@ public class ToggleBlock : MonoBehaviour {
         if (box.enabled == false)
         {
             circle.enabled = false;
-            currentState = 0;
             this.gameObject.layer = 2;
             render.sortingLayerName = "HighBackground";
+            isReal = false;
         }
         else
         {
             circle.enabled = true;
-            currentState = 1;
             this.gameObject.layer = 0;
             render.sortingLayerName = "Foreground";
+            isReal = true;
         }
-        initial = currentState;
     }
 
     
 	// Update is called once per frame
 	void Update ()
     {
-        if (Input.GetKeyDown(KeyCode.J) && player.canDash == true)
+        if (Input.GetKeyDown(KeyCode.J) && player.canDash == true && player.isDashing == false)
          {
             animator.SetBool("Transitioning", true);
             currentState = (currentState + 1) % 2;
-            if (currentState == 0)
+            if (box.enabled == true)
             {
                 box.enabled = false;
                 circle.enabled = false;
@@ -64,16 +64,18 @@ public class ToggleBlock : MonoBehaviour {
         }
         else
             animator.SetBool("Transitioning", false);
-        if (player.dead == true || player.isTransitioning == true)
+        if ((player.dead == true || player.isTransitioning == true) && once)
             StartCoroutine(Reset());
     }
 
     IEnumerator Reset()
     {
+        once = false;
+        StartCoroutine(ResetOnce());
         if(player.dead == true)
-            yield return new WaitForSecondsRealtime(0.5f);
-        currentState = initial;
-        if (currentState == 0)
+            yield return new WaitForSecondsRealtime(0.8f);
+        currentState = 0;
+        if(isReal == false)
         {
             box.enabled = false;
             circle.enabled = false;
@@ -88,6 +90,15 @@ public class ToggleBlock : MonoBehaviour {
             render.sortingLayerName = "Foreground";
         }
         picker.SimplePick(currentState);
+    }
+
+    IEnumerator ResetOnce()
+    {
+        if (player.dead == true)
+            yield return new WaitUntil(() => player.dead == false);
+        else
+            yield return new WaitUntil(() => player.isTransitioning == false);
+        once = true;
     }
 
     private void OnTriggerStay2D(Collider2D collision)
