@@ -23,13 +23,13 @@ public class PlayerControl : MonoBehaviour {
     public int currentLevel = 0;
 
     [HideInInspector]
-    public bool canJump, onWall, backWall, upWall, onGround, canControlJump, dashJump;
+    public bool canJump, onWall, backWall, upWall, canCheckWall ,onGround, canControlJump, dashJump;
     public bool springJump, canControlSpring, canControlMove;
 
     private float fallGravity = 4.5f, lowGravity = 3f, jumpVelocity = 13.5f, walkVelocity = 7.5f;  
 
     [HideInInspector]
-    public bool canReset = true, canDash, isDashing, isTransitioning, dead, canCollect;
+    public bool canReset = true, canDash, isDashing, isTransitioning, dead, canCollect, complete = false;
 
     [HideInInspector]
     public float dashTime = 0, dashCooldown = 0;
@@ -61,6 +61,7 @@ public class PlayerControl : MonoBehaviour {
         canCollect = true;
         dashJump = false;
         springJump = false;
+        canCheckWall = true;
     }
 
     // Update is called once per frame
@@ -68,21 +69,27 @@ public class PlayerControl : MonoBehaviour {
     {
         if (IsDead())
             return;
+        velocity = rb.velocity;
         CheckCollision();
+        if(onGround == false)
+            velocity = JumpGravity(velocity);
+        rb.velocity = velocity;
+        if (complete)
+        {
+            isDashing = false;
+            rb.constraints = RigidbodyConstraints2D.FreezePositionX;
+            SetAnimAndFlip();
+            return;
+        }
+            
 
         /* Control moving */
-
-        velocity = rb.velocity;
-
         if ((Input.GetKeyDown(KeyCode.J) && canDash == true) || isDashing == true)
             velocity = Dash(velocity);
         if (isDashing == false)
             velocity = HorizontalMoving(velocity);
         if (Input.GetKeyDown(KeyCode.K) || (Input.GetKey(KeyCode.L) && isTransitioning == false))
             velocity = JumpAndClimb(velocity);
-
-        velocity = JumpGravity(velocity);
-
         rb.velocity = velocity;
 
         SetAnimAndFlip();
@@ -197,15 +204,17 @@ public class PlayerControl : MonoBehaviour {
             canControlJump = true;
         if (velocity.y < -20 && isDashing == false)
             velocity = new Vector2(velocity.x, -20);
-        if (canControlJump == true || isTransitioning)
+        if (canControlJump == true || isTransitioning || complete)
         {
             if (velocity.y < 0)
                 velocity += Vector2.up * Physics2D.gravity.y * (fallGravity) * Time.deltaTime;
-            else if ((velocity.y > 0 && (!Input.GetKey(KeyCode.K))) || springJump == true)
+            else if ((velocity.y > 0 && (!Input.GetKey(KeyCode.K))) || springJump == true || complete)
                 velocity += Vector2.up * Physics2D.gravity.y * (lowGravity) * Time.deltaTime;
         }
         else
         {
+            if (!(onWall == true && Input.GetKey(KeyCode.L)))
+                rb.gravityScale = lowGravity;
             if (!(onWall == true && Input.GetKey(KeyCode.L)))
                 velocity += Vector2.up * Physics2D.gravity.y * (lowGravity) * Time.deltaTime;
         }
@@ -277,6 +286,7 @@ public class PlayerControl : MonoBehaviour {
             rb.velocity = Vector2.zero;
             rb.gravityScale = 0;
             dashTime = 0;
+            canCheckWall = true;
             return true;
         }
         else
@@ -308,18 +318,21 @@ public class PlayerControl : MonoBehaviour {
             StartCoroutine(ApplyCollisionChange(0));
         else
             StartCoroutine(ApplyCollisionChange(0.1f));
-        wallVector = (sr.flipX == false) ? Vector2.right : Vector2.left;
-        RaycastHit2D wallhit = Physics2D.Raycast(this.transform.position, wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2))), 
-                     backwall = Physics2D.Raycast(this.transform.position, -wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2))),
-                     upwall = Physics2D.Raycast(new Vector2(this.transform.position.x, this.transform.position.y + 0.1f), wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2)));
-        onWall = (wallhit.collider != null && wallhit.collider.isTrigger == false) ? true : false;
-        backWall = (backwall.collider != null && backwall.collider.isTrigger == false) ? true : false;
-        upWall = (upwall.collider != null && upwall.collider.isTrigger == false) ? true : false;
+        if(canCheckWall)
+        {
+            wallVector = (sr.flipX == false) ? Vector2.right : Vector2.left;
+            RaycastHit2D wallhit = Physics2D.Raycast(this.transform.position, wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2) | (1 << 10))),
+                         backwall = Physics2D.Raycast(this.transform.position, -wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2) | (1 << 10))),
+                         upwall = Physics2D.Raycast(new Vector2(this.transform.position.x, this.transform.position.y + 0.1f), wallVector, 0.6f, ~((1 << 9) | (1 << 8) | (1 << 2) | (1 << 10)));
+            onWall = (wallhit.collider != null && wallhit.collider.isTrigger == false) ? true : false;
+            backWall = (backwall.collider != null && backwall.collider.isTrigger == false) ? true : false;
+            upWall = (upwall.collider != null && upwall.collider.isTrigger == false) ? true : false;
+        }
     }
 
     public void SetAnimAndFlip()
     {
-        if (canControlMove && (onWall == false || !Input.GetKey(KeyCode.L)))
+        if (canControlMove && (onWall == false || !Input.GetKey(KeyCode.L)) && complete == false)
         {
             if (Input.GetAxisRaw("Horizontal") > 0)
                 sr.flipX = false;
@@ -379,7 +392,7 @@ public class PlayerControl : MonoBehaviour {
 
     IEnumerator SpringControl()
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.5f);
         if(!(onGround == true || isDashing == true || Mathf.Abs(rb.velocity.x) <= 1))
             canControlSpring = true;
     }

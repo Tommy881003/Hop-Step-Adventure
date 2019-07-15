@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 2167376888495535848}
   - component: {fileID: 2167376888495535863}
   - component: {fileID: 2167376888495535862}
-  - component: {fileID: 2167376888495535861}
   - component: {fileID: 2167376888495535850}
   - component: {fileID: 5446901773939827351}
   - component: {fileID: 5691474200864550191}
@@ -32,7 +31,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2167376888495535860}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.5, y: 8, z: -10}
+  m_LocalPosition: {x: 0.43, y: 5.9, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -75,7 +74,7 @@ SpriteRenderer:
   m_SortingLayerID: 1603354519
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 57ce79566294f2543a1dc5dd66878062, type: 3}
+  m_Sprite: {fileID: 21300004, guid: 85e918fdd8d653b4baddc0da1ac778d6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -179,7 +178,7 @@ LineRenderer:
     textureMode: 1
     shadowBias: 0.5
     generateLightingData: 0
-  m_UseWorldSpace: 1
+  m_UseWorldSpace: 0
   m_Loop: 0
 --- !u!114 &2167376888495535862
 MonoBehaviour:
@@ -197,25 +196,6 @@ MonoBehaviour:
   isActivate: 1
   isMove: 1
   MoveSpeed: 0
---- !u!95 &2167376888495535861
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2167376888495535860}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 15a817adb92220f4ba62f885100f2d99, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!50 &2167376888495535850
 Rigidbody2D:
   serializedVersion: 4

@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 2392922533702633331}
   - component: {fileID: 2584971742169914245}
   - component: {fileID: 1520960874852697296}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: LaserButton
   m_TagString: Laser
   m_Icon: {fileID: 0}
@@ -163,7 +163,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   press: 0
-  crystalAndButton: []
 --- !u!114 &2392922533702633331
 MonoBehaviour:
   m_ObjectHideFlags: 0

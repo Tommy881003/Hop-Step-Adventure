@@ -63,6 +63,8 @@ public class Spring : MonoBehaviour {
             Rigidbody2D rb = collision.gameObject.GetComponent<Rigidbody2D>();
             PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
             player.isDashing = false;
+            player.onWall = false;
+            player.canCheckWall = false;
             if (jumpX != 0)
             {
                 player.canControlMove = false;
@@ -78,9 +80,10 @@ public class Spring : MonoBehaviour {
     {
         if (collision.gameObject.tag == "Player")
         {
+            PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
             animator.SetBool("PlayerPress", false);
+            player.canCheckWall = true;
         }
-
     }
 
     IEnumerator DashReset(PlayerControl player)

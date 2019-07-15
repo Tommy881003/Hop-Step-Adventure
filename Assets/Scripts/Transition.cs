@@ -52,7 +52,10 @@ public class Transition : MonoBehaviour
         control.SetAnimAndFlip();
         holder.isTransitioning = true;
         holder.enabled = false;
-        cam.transform.DOMove(CamPos(playerPos), 0.75f).SetUpdate(true);
+        Vector3 Pos = CamPos(playerPos);
+        Vector3 oldPos = cam.transform.position;
+        StartCoroutine(holder.MoveParallax(Pos, oldPos, 0.75f));
+        cam.transform.DOMove(Pos, 0.75f).SetUpdate(true);
 
         map.levels[control.currentLevel].GetComponent<Transition>().close(LevelIndex);
 

@@ -57,7 +57,9 @@ public class LaserButton : MonoBehaviour {
         animator.SetBool("Press", press);
         box.enabled = true;
         if (player.dead == true || player.isTransitioning == true)
+        {
             StartCoroutine(Reset());
+        }
 	}
 
     private void OnCollisionStay2D(Collision2D collision)

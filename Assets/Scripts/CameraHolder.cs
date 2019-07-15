@@ -6,11 +6,15 @@ using DG.Tweening;
 public class CameraHolder : MonoBehaviour {
 
     private PlayerControl player;
-    public bool isTransitioning;
+    public bool isTransitioning, isLocked, smoothLock;
     private bool isShakeing;
     private float duration = 0, seed1 ,seed2;
     public Vector2 corner, corner2;
+    [HideInInspector]
+    public Vector2 lockPos = Vector2.zero;
     public PlayerPosition pos;
+    private GameObject far, farR, near, nearR;
+    private float farDis, farShift, nearDis, nearShift;
 
 	// Use this for initialization
 	void Start ()
@@ -18,11 +22,24 @@ public class CameraHolder : MonoBehaviour {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
         isTransitioning = false;
         isShakeing = false;
+        isLocked = false;
+        smoothLock = false;
+        lockPos = Vector2.zero;
         if (pos != null && pos.testMode == true)
         {
             corner = pos.corner;
             corner2 = pos.corner2;
         }
+        near = this.transform.Find("Near").gameObject;
+        nearR = this.transform.Find("Near'").gameObject;
+        if (near != null && nearR != null)
+            nearDis = nearR.transform.position.x - near.transform.position.x;
+        nearShift = 0;
+        far = this.transform.Find("Far").gameObject;
+        farR = this.transform.Find("Far'").gameObject;
+        if (far != null && farR != null)
+            farDis = farR.transform.position.x - far.transform.position.x;
+        nearShift = 0;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
     }
@@ -38,31 +55,36 @@ public class CameraHolder : MonoBehaviour {
         if(player.dead)
         {
             StartCoroutine(CamShake());
+            StartCoroutine(Delock());
         }
-        else if (Input.GetKeyDown(KeyCode.J) && player.canDash == true)
-        {
+        else if (Input.GetKeyDown(KeyCode.J) && player.canDash == true && player.complete == false)
             StartCoroutine(CamShake());
-        }
     }
 
     private void LateUpdate()
     {
+        if (player.complete)
+            return;
         Vector3 camPos = this.transform.position;
-        Vector2 playerPos = player.transform.position;
-        Vector2 distance = playerPos - new Vector2(camPos.x, camPos.y);
-        float followStrengh = Mathf.Lerp(5f, 40f, distance.magnitude / 100);
-        camPos.x = Mathf.Lerp(camPos.x, playerPos.x, followStrengh * Time.deltaTime);
-        if (camPos.x > Mathf.Max(corner.x, corner2.x))
-            camPos.x = Mathf.Max(corner.x, corner2.x);
-        else if (camPos.x < Mathf.Min(corner.x, corner2.x))
-            camPos.x = Mathf.Min(corner.x, corner2.x);
-        camPos.y = Mathf.Lerp(camPos.y, playerPos.y, followStrengh * Time.deltaTime);
-        if (camPos.y > Mathf.Max(corner.y, corner2.y))
-            camPos.y = Mathf.Max(corner.y, corner2.y);
-        else if (camPos.y < Mathf.Min(corner.y, corner2.y))
-            camPos.y = Mathf.Min(corner.y, corner2.y);
-        camPos.z = -10;
-        this.transform.position = camPos;
+        if (isLocked == false || (isLocked && new Vector2(camPos.x, camPos.y) != lockPos))
+        {
+            bool locking = (isLocked && new Vector2(camPos.x, camPos.y) != lockPos);
+            Vector2 playerPos = ((locking)? lockPos : new Vector2(player.transform.position.x, player.transform.position.y));
+            Vector2 distance = playerPos - new Vector2(camPos.x, camPos.y);
+            float followStrengh = ((smoothLock || locking)? Mathf.Lerp(5f, 20f, distance.magnitude / 100) : Mathf.Lerp(5f, 40f, distance.magnitude / 100));
+            camPos.x = Mathf.Lerp(camPos.x, playerPos.x, followStrengh * Time.deltaTime);
+            if (camPos.x > Mathf.Max(corner.x, corner2.x))
+                camPos.x = Mathf.Max(corner.x, corner2.x);
+            else if (camPos.x < Mathf.Min(corner.x, corner2.x))
+                camPos.x = Mathf.Min(corner.x, corner2.x);
+            camPos.y = Mathf.Lerp(camPos.y, playerPos.y, followStrengh * Time.deltaTime);
+            if (camPos.y > Mathf.Max(corner.y, corner2.y))
+                camPos.y = Mathf.Max(corner.y, corner2.y);
+            else if (camPos.y < Mathf.Min(corner.y, corner2.y))
+                camPos.y = Mathf.Min(corner.y, corner2.y);
+            camPos.z = -10;
+            this.transform.position = camPos;
+        }
         if (isShakeing)
         {
             int frequency = 8;
@@ -85,5 +107,120 @@ public class CameraHolder : MonoBehaviour {
         }
         isShakeing = false;
         duration = 0;
+    }
+
+    IEnumerator Delock()
+    {
+        yield return new WaitForSeconds(0.7f);
+        isLocked = false;
+    }
+
+    public IEnumerator MoveParallax(Vector3 endPos, Vector3 oldPos, float time)
+    {
+        float deltaX = endPos.x - oldPos.x;
+        float deltaY = endPos.y - oldPos.y;
+        float farX = -deltaX / 7.5f, farY = -deltaY / 16.5f, nearX = -deltaX / 5f, nearY = -deltaY / 11f;
+        nearShift -= nearX;
+        farShift -= farX;
+        if (nearShift >= nearDis || nearShift < 0)
+        {
+            if(nearShift >= 0)
+            {
+                near.transform.localPosition = new Vector3(nearR.transform.localPosition.x + nearDis, near.transform.localPosition.y, near.transform.localPosition.z);
+                nearShift -= nearDis;
+            }
+            else
+            {
+                nearR.transform.localPosition = new Vector3(near.transform.localPosition.x - nearDis, nearR.transform.localPosition.y, nearR.transform.localPosition.z);
+                nearShift += nearDis;
+            }
+            GameObject temp = near;
+            near = nearR;
+            nearR = temp;
+        }
+        if(farShift >= farDis || farShift < 0)
+        {
+            if (farShift >= 0)
+            {
+                far.transform.localPosition = new Vector3(farR.transform.localPosition.x + nearDis, far.transform.localPosition.y, far.transform.localPosition.z);
+                farShift -= farDis;
+            }
+            else
+            {
+                farR.transform.localPosition = new Vector3(far.transform.localPosition.x - nearDis, farR.transform.localPosition.y, farR.transform.localPosition.z);
+                farShift += farDis;
+            }
+            GameObject temp = far;
+            far = farR;
+            farR = temp;
+        }
+        Vector3 farM = new Vector3(far.transform.localPosition.x + farX, far.transform.localPosition.y + farY,10);
+        Vector3 farRM = new Vector3(farR.transform.localPosition.x + farX, farR.transform.localPosition.y + farY,10);
+        Vector3 nearM = new Vector3(near.transform.localPosition.x + nearX, near.transform.localPosition.y + nearY,10);
+        Vector3 nearRM = new Vector3(nearR.transform.localPosition.x + nearX, nearR.transform.localPosition.y + nearY,10);
+        far.transform.DOLocalMove(farM, time).SetUpdate(true);
+        farR.transform.DOLocalMove(farRM, time).SetUpdate(true);
+        near.transform.DOLocalMove(nearM, time).SetUpdate(true);
+        nearR.transform.DOLocalMove(nearRM, time).SetUpdate(true);
+        yield return new WaitForSeconds(0.75f);
+    }
+
+    public IEnumerator MoveParallax(Vector3 endPos, Vector3 oldPos, float time, Ease ease)
+    {
+        float deltaX = endPos.x - oldPos.x;
+        float deltaY = endPos.y - oldPos.y;
+        float farX = -deltaX / 7.5f, farY = -deltaY / 16.5f, nearX = -deltaX / 5f, nearY = -deltaY / 11f;
+        nearShift -= nearX;
+        farShift -= farX;
+        if (nearShift >= nearDis || nearShift < 0)
+        {
+            if (nearShift >= 0)
+            {
+                near.transform.localPosition = new Vector3(nearR.transform.localPosition.x + nearDis, near.transform.localPosition.y, near.transform.localPosition.z);
+                nearShift -= nearDis;
+            }
+            else
+            {
+                nearR.transform.localPosition = new Vector3(near.transform.localPosition.x - nearDis, nearR.transform.localPosition.y, nearR.transform.localPosition.z);
+                nearShift += nearDis;
+            }
+            GameObject temp = near;
+            near = nearR;
+            nearR = temp;
+        }
+        if (farShift >= farDis || farShift < 0)
+        {
+            if (farShift >= 0)
+            {
+                far.transform.localPosition = new Vector3(farR.transform.localPosition.x + nearDis, far.transform.localPosition.y, far.transform.localPosition.z);
+                farShift -= farDis;
+            }
+            else
+            {
+                farR.transform.localPosition = new Vector3(far.transform.localPosition.x - nearDis, farR.transform.localPosition.y, farR.transform.localPosition.z);
+                farShift += farDis;
+            }
+            GameObject temp = far;
+            far = farR;
+            farR = temp;
+        }
+        Vector3 farM = new Vector3(far.transform.localPosition.x + farX, far.transform.localPosition.y + farY, 10);
+        Vector3 farRM = new Vector3(farR.transform.localPosition.x + farX, farR.transform.localPosition.y + farY, 10);
+        Vector3 nearM = new Vector3(near.transform.localPosition.x + nearX, near.transform.localPosition.y + nearY, 10);
+        Vector3 nearRM = new Vector3(nearR.transform.localPosition.x + nearX, nearR.transform.localPosition.y + nearY, 10);
+        far.transform.DOLocalMove(farM, time).SetUpdate(true).SetEase(ease);
+        farR.transform.DOLocalMove(farRM, time).SetUpdate(true).SetEase(ease);
+        near.transform.DOLocalMove(nearM, time).SetUpdate(true).SetEase(ease);
+        nearR.transform.DOLocalMove(nearRM, time).SetUpdate(true).SetEase(ease);
+        yield return new WaitForSeconds(0.75f);
+    }
+
+    public void EndLevel()
+    {
+        float endY = this.transform.position.y + 110f;
+        Vector3 oldPos = this.transform.position;
+        Vector3 endPos = new Vector3(oldPos.x, endY + 220f, oldPos.z);
+        StartCoroutine(MoveParallax(endPos, oldPos, 3.0f, Ease.InOutQuint));
+        this.transform.DOMoveY(endY, 3).SetEase(Ease.InOutQuint);
     }
 }
