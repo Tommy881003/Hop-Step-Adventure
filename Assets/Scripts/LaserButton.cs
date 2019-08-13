@@ -79,7 +79,10 @@ public class LaserButton : MonoBehaviour {
                     {
                         Line line = temp.GetComponent<Line>();
                         if(line != null && line.enabled == true)
+                        {
                             line.isActivate = !line.isActivate;
+                            line.PlaySound(line.isActivate);
+                        }  
                     }
                 }
             }

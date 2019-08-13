@@ -15,6 +15,9 @@ public class Cherry : MonoBehaviour
     public bool touched = false,once = true,collected = false;
     private Vector2 distance;
     public Vector3 initialPos;
+    [SerializeField]
+    private Material haveBeenCollect;
+    private ObjAudioManager audioManager;
 
     void Start()
     {
@@ -27,6 +30,7 @@ public class Cherry : MonoBehaviour
         anim = this.GetComponentInChildren<Animator>();
         cc.radius = 1;
         initialPos = this.transform.position;
+        audioManager = this.GetComponent<ObjAudioManager>();
     }
 
     // Update is called once per frame
@@ -69,12 +73,10 @@ public class Cherry : MonoBehaviour
     {
         if(once)
         {
-            this.transform.DOMoveX(initialPos.x, 1).SetEase(Ease.OutCubic);
-            this.transform.DOMoveY(initialPos.y, 1).SetEase(Ease.OutSine);
+            this.transform.DOMoveX(initialPos.x, 0.75f).SetEase(Ease.OutCubic);
+            this.transform.DOMoveY(initialPos.y, 0.75f).SetEase(Ease.OutSine);
             once = false;
             touched = false;
-            sr.enabled = true;
-            sr.sortingLayerName = "Default";
             StartCoroutine(ResetOnce());
         }
         ps.transform.LookAt(initialPos, Vector3.forward);
@@ -84,9 +86,13 @@ public class Cherry : MonoBehaviour
     {
         gain.Play();
         sr.enabled = false;
+        sr.material = haveBeenCollect;
+        ParticleSystem.MainModule main = ps.main;
+        main.startColor = Color.white;
         collected = true;
         touched = false;
         anim.SetTrigger("Collect");
+        audioManager.PlayByName("Get");
         StartCoroutine(GoBack());
     }
 
@@ -100,6 +106,8 @@ public class Cherry : MonoBehaviour
     IEnumerator GoBack()
     {
         yield return new WaitForSeconds(1f);
+        ParticleSystem.MainModule main = gain.main;
+        main.startColor = Color.white;
         this.transform.position = initialPos;
         ps.Play(false);
     }
@@ -109,5 +117,7 @@ public class Cherry : MonoBehaviour
         yield return new WaitUntil(() => control.dead == false);
         once = true;
         cc.enabled = true;
+        sr.enabled = true;
+        sr.sortingLayerName = "Default";
     }
 }

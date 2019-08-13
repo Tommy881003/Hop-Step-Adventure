@@ -167,7 +167,9 @@ public class TransitionBlockInspector : Editor
         showMessage = false;
         Transition transition = (Transition)target;
         LevelSize = transition.LevelSize;
-        Vector2 BoxSize = transition.gameObject.GetComponent<BoxCollider2D>().size;
+        Vector2 BoxSize = Vector2.zero;
+        if (transition.gameObject.GetComponent<BoxCollider2D>() != null)
+            BoxSize = transition.gameObject.GetComponent<BoxCollider2D>().size;
         if(BoxSize != LevelSize)
         {
             if(LevelSize.x >= 40 && LevelSize.y >= 22)

@@ -9,6 +9,7 @@ public class CameraLocker : MonoBehaviour
     private BoxCollider2D box;
     public Vector2 lockPos = Vector2.zero;
     private PlayerControl player;
+    public bool DisableOnExit;
 
     // Start is called before the first frame update
     void Start()
@@ -51,7 +52,7 @@ public class CameraLocker : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
         holder.smoothLock = false;
-        if(holder.isLocked == false)
+        if(holder.isLocked == false && DisableOnExit)
             Disable();
     }
 

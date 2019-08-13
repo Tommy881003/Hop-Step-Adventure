@@ -32,7 +32,7 @@ public class SpritePicker : MonoBehaviour
                     RaycastHit2D[] hits = Physics2D.RaycastAll(newpos, Vector2.zero);
                     foreach(RaycastHit2D hit in hits)
                     {
-                        if (this.gameObject.GetComponent<Ground>() != null || tilename == "Bridge")
+                        if (this.gameObject.GetComponent<Ground>() != null || tilename == "Bridge" || tilename == "WhiteBridge")
                         {
                             if (hit.collider != null && hit.collider.gameObject.GetComponent<Ground>() != null)
                             {
@@ -54,7 +54,7 @@ public class SpritePicker : MonoBehaviour
         SpriteRenderer renderer = this.GetComponent<SpriteRenderer>();
         currentSpriteIndex = spritePicker;
 
-        if (tilename == "Bridge")
+        if (tilename == "Bridge" || tilename == "WhiteBridge")
         {
             switch (spritePicker)
             {

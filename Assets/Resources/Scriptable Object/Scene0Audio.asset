@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaef3fbbddd57614d9fcd4cb5b545ff6, type: 3}
+  m_Name: Scene0Audio
+  m_EditorClassIdentifier: 
+  sounds:
+  - name: BGM
+    clip: {fileID: 8300000, guid: 29cec4ff1dd129c4da622dfc0f5ab272, type: 3}
+    volume: 0
+    pitch: 1
+    blend: 0
+    loop: 1
+    isFX: 0
+    source: {fileID: 0}
+    hashCode: 65704
+  - name: BGFX
+    clip: {fileID: 8300000, guid: 68aaf9fe09112584f87337a9715a2f3c, type: 3}
+    volume: 0.1
+    pitch: 1
+    blend: 0
+    loop: 1
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: 2036695

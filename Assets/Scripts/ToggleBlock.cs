@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class ToggleBlock : MonoBehaviour {
@@ -22,6 +23,7 @@ public class ToggleBlock : MonoBehaviour {
         animator = this.GetComponent<Animator>();
         render = this.GetComponent<SpriteRenderer>();
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+        player.OnDash += Change;
         if (box.enabled == false)
         {
             circle.enabled = false;
@@ -42,30 +44,29 @@ public class ToggleBlock : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        if (Input.GetKeyDown(KeyCode.J) && player.canDash == true && player.isDashing == false)
-         {
-            animator.SetBool("Transitioning", true);
-            currentState = (currentState + 1) % 2;
-            if (box.enabled == true)
-            {
-                box.enabled = false;
-                circle.enabled = false;
-                this.gameObject.layer = 2;
-                render.sortingLayerName = "HighBackground";
-            }
-            else
-            {
-                box.enabled = true;
-                circle.enabled = true;
-                this.gameObject.layer = 0;
-                render.sortingLayerName = "Foreground";
-            }
-            picker.SimplePick(currentState);
-        }
-        else
-            animator.SetBool("Transitioning", false);
         if ((player.dead == true || player.isTransitioning == true) && once)
             StartCoroutine(Reset());
+    }
+
+    private void Change(object sender, EventArgs e)
+    {
+        animator.SetTrigger("Transitioning");
+        currentState = (currentState + 1) % 2;
+        if (box.enabled == true)
+        {
+            box.enabled = false;
+            circle.enabled = false;
+            this.gameObject.layer = 2;
+            render.sortingLayerName = "HighBackground";
+        }
+        else
+        {
+            box.enabled = true;
+            circle.enabled = true;
+            this.gameObject.layer = 0;
+            render.sortingLayerName = "Foreground";
+        }
+        picker.SimplePick(currentState);
     }
 
     IEnumerator Reset()

@@ -6,6 +6,7 @@ public class Spring : MonoBehaviour {
 
     private Animator animator;
     private AnimatorStateInfo CurrentStateInfo;
+    private ObjAudioManager audioManager;
     private int rotation;
     private float jumpY = 27.5f;
     private float jumpX = 20;
@@ -14,6 +15,7 @@ public class Spring : MonoBehaviour {
     private void Start()
     {
         animator = this.GetComponent<Animator>();
+        audioManager = this.GetComponent<ObjAudioManager>();
         rotation = (int)(this.transform.rotation.eulerAngles.z);
         switch(rotation)
         {
@@ -44,6 +46,7 @@ public class Spring : MonoBehaviour {
             Rigidbody2D rb = collision.gameObject.GetComponent<Rigidbody2D>();
             PlayerControl player = collision.gameObject.GetComponent<PlayerControl>();
             player.isDashing = false;
+            player.onGround = false;
             if (jumpX != 0)
             {
                 player.canControlMove = false;
@@ -52,10 +55,11 @@ public class Spring : MonoBehaviour {
             }
             StartCoroutine(DashReset(player));
             rb.velocity = new Vector2(jumpX,jumpY);
+            audioManager.PlayByName("Twang");
         }
     }
 
-    private void OnCollisionStay2D(Collision2D collision)
+    /*private void OnCollisionStay2D(Collision2D collision)
     {
         if (collision.gameObject.tag == "Player")
         {
@@ -74,7 +78,7 @@ public class Spring : MonoBehaviour {
             StartCoroutine(DashReset(player));
             rb.velocity = new Vector2(jumpX, jumpY);
         }
-    }
+    }*/
 
     private void OnCollisionExit2D(Collision2D collision)
     {

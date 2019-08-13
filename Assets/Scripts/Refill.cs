@@ -5,6 +5,7 @@ using UnityEngine;
 public class Refill : MonoBehaviour
 {
     private PlayerControl player;
+    private ObjAudioManager audioManager;
     private Animator anim;
     private SpriteRenderer sr;
     private CircleCollider2D cc;
@@ -12,11 +13,13 @@ public class Refill : MonoBehaviour
     private ParticleSystem ps, eat;
     private Light point;
     public bool once = true;
+    private Coroutine coroutine = null;
 
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+        audioManager = this.GetComponent<ObjAudioManager>();
         anim = this.GetComponent<Animator>();
         sr = this.GetComponent<SpriteRenderer>();
         cc = this.GetComponent<CircleCollider2D>();
@@ -28,6 +31,8 @@ public class Refill : MonoBehaviour
     {
         if ((player.dead || player.isTransitioning) && once)
         {
+            if(coroutine != null)
+                StopCoroutine(coroutine);
             StartCoroutine(Appear(true));
             once = false;
         }
@@ -47,7 +52,8 @@ public class Refill : MonoBehaviour
                 ps.Clear();
                 ps.Stop();
                 anim.SetTrigger("Halt");
-                StartCoroutine(Appear(false));
+                audioManager.PlayByName("Touch");
+                coroutine = StartCoroutine(Appear(false));
             }
         }
     }
@@ -75,6 +81,7 @@ public class Refill : MonoBehaviour
             ps.Play();
             anim.SetTrigger("Appear");
             anim.ResetTrigger("Halt");
+            audioManager.PlayByName("Reappear");
             yield return new WaitForEndOfFrame();
             anim.ResetTrigger("Appear");
         }   

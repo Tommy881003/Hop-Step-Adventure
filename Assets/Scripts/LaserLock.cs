@@ -55,7 +55,7 @@ public class LaserLock : MonoBehaviour
         BlobB.SetActive(isActivate);
         if (isActivate)
         {
-            t += Time.fixedDeltaTime;
+            t += Time.deltaTime;
             float scale = (Mathf.Sin(40 * t) * 0.075f + 0.6f);
             lr.widthMultiplier = (Mathf.Sin(40 * t) * 0.04f + 0.4f);
             BlobA.transform.localScale = new Vector3(scale, scale);

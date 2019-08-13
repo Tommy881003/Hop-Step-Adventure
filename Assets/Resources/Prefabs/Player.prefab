@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 1094465376618489216}
   - component: {fileID: 1094465376618489276}
   - component: {fileID: 1094465376618489279}
+  - component: {fileID: 6860530241937864145}
+  - component: {fileID: 2371768717868554305}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -30,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 1094465376618489217}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2, y: 3, z: 0}
-  m_LocalScale: {x: 1.1, y: 1.1, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -107,8 +109,8 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 1
   serializedVersion: 2
-  m_Size: {x: 0.55, y: 0.9}
-  m_EdgeRadius: 0.1
+  m_Size: {x: 0.2, y: 0.3}
+  m_EdgeRadius: 0.4
 --- !u!50 &1094465376618489216
 Rigidbody2D:
   serializedVersion: 4
@@ -142,20 +144,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a5fde91084b803499164a874d9f123c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  handler: {fileID: 0}
   dash: {fileID: 1272738255929319399, guid: 3ecc6d9f36c38d247adb3a3b286a23a1, type: 3}
   jump: {fileID: 2889174342537604686, guid: 795cea65235cc7d488816bb3b8f6df67, type: 3}
   phantom: {fileID: 5395070203798402628, guid: 82b0b9e136f0dd443b555bb54eecf639, type: 3}
   NoDash: {fileID: 2100000, guid: a84bd8b3809c83c4789ecee2e64fa468, type: 2}
   pos: {fileID: 0}
+  input: {fileID: 0}
+  dashDirection: {x: 0, y: 0}
   spawnPos: {x: 0, y: 0}
   currentLevel: 0
   canJump: 0
   onWall: 0
   backWall: 0
   upWall: 0
-  onGround: 0
-  canControlJump: 0
+  canCheckWall: 0
   dashJump: 0
+  canControlJump: 0
+  onGround: 0
+  springJump: 0
+  canControlSpring: 0
   canControlMove: 0
   canReset: 1
   canDash: 0
@@ -163,6 +171,8 @@ MonoBehaviour:
   isTransitioning: 0
   dead: 0
   canCollect: 0
+  complete: 0
+  isCutScene: 0
   dashTime: 0
   dashCooldown: 0
 --- !u!95 &1094465376618489279
@@ -184,3 +194,24 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!81 &6860530241937864145
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094465376618489217}
+  m_Enabled: 1
+--- !u!114 &2371768717868554305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094465376618489217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65bf48c0ff7dfdd40a2552500ba0eafa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clipArray: {fileID: 11400000, guid: 671901f9aaab6d34da14cdf96ad331bc, type: 2}

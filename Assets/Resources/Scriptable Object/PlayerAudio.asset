@@ -1,0 +1,114 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaef3fbbddd57614d9fcd4cb5b545ff6, type: 3}
+  m_Name: PlayerAudio
+  m_EditorClassIdentifier: 
+  sounds:
+  - name: Dash
+    clip: {fileID: 8300000, guid: 49cc64f6677ead841ac50428e64438ef, type: 3}
+    volume: 0.7
+    pitch: 0.7
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: 2122674
+  - name: Dead
+    clip: {fileID: 8300000, guid: 7d4b7591fbc614c4490f30406809c875, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: 2125956
+  - name: Concrete1
+    clip: {fileID: 8300000, guid: f0946c7510c19654a9c7eab085759c4f, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: 1121902124
+  - name: Concrete2
+    clip: {fileID: 8300000, guid: 451dbb8c320f0724fa62028067604b78, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: 1121902125
+  - name: Metal1
+    clip: {fileID: 8300000, guid: 1a35e20c1a0064d4389502ceef8f77bc, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: -1993694678
+  - name: Metal2
+    clip: {fileID: 8300000, guid: bd34b95b217975b4ab40d57f750c2eb5, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: -1993694677
+  - name: Wood1
+    clip: {fileID: 8300000, guid: ca110457a9d4e5e4592b5019c78a414b, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: 83762948
+  - name: Wood2
+    clip: {fileID: 8300000, guid: 29c0f542b187d2849b0f69912f8e490c, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: 83762949
+  - name: ConcreteJump
+    clip: {fileID: 8300000, guid: 013bb7988ee636646945202f420f67dc, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: -848460685
+  - name: MetalJump
+    clip: {fileID: 8300000, guid: 3f05bcd801cb13646b897e0035a71d73, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: 945444789
+  - name: WoodJump
+    clip: {fileID: 8300000, guid: 8ea7e67b750a07c44b94916071005d03, type: 3}
+    volume: 1
+    pitch: 1
+    blend: 0
+    loop: 0
+    isFX: 1
+    source: {fileID: 0}
+    hashCode: 6845595

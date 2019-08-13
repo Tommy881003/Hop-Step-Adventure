@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 2392922533702633331}
   - component: {fileID: 2584971742169914245}
   - component: {fileID: 1520960874852697296}
+  - component: {fileID: 3512950443811144990}
   m_Layer: 9
   m_Name: LaserButton
   m_TagString: Laser
@@ -200,3 +201,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65d02a3b2ab743e4999b7fbe3943fcef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3512950443811144990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7249122825849583555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65bf48c0ff7dfdd40a2552500ba0eafa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clipArray: {fileID: 11400000, guid: 3879dcc5e66add440805a0d5f59db491, type: 2}

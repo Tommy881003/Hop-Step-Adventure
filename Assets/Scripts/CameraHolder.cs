@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using DG.Tweening;
 
@@ -13,13 +14,19 @@ public class CameraHolder : MonoBehaviour {
     [HideInInspector]
     public Vector2 lockPos = Vector2.zero;
     public PlayerPosition pos;
-    private GameObject far, farR, near, nearR;
+    private GameObject far = null, farR = null, near = null, nearR = null;
     private float farDis, farShift, nearDis, nearShift;
+    [SerializeField]
+    private EndScene end;
+    private GlitchEffect glitch = null;
 
 	// Use this for initialization
 	void Start ()
     {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+        player.OnDash += StartCamShake;
         isTransitioning = false;
         isShakeing = false;
         isLocked = false;
@@ -30,18 +37,21 @@ public class CameraHolder : MonoBehaviour {
             corner = pos.corner;
             corner2 = pos.corner2;
         }
-        near = this.transform.Find("Near").gameObject;
-        nearR = this.transform.Find("Near'").gameObject;
+        if(this.transform.Find("Near") != null)
+            near = this.transform.Find("Near").gameObject;
+        if(this.transform.Find("Near'") != null)
+            nearR = this.transform.Find("Near'").gameObject;
         if (near != null && nearR != null)
             nearDis = nearR.transform.position.x - near.transform.position.x;
         nearShift = 0;
-        far = this.transform.Find("Far").gameObject;
-        farR = this.transform.Find("Far'").gameObject;
+        if(this.transform.Find("Far") != null)
+            far = this.transform.Find("Far").gameObject;
+        if(this.transform.Find("Far'") != null)
+            farR = this.transform.Find("Far'").gameObject;
         if (far != null && farR != null)
             farDis = farR.transform.position.x - far.transform.position.x;
         nearShift = 0;
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        glitch = this.GetComponent<GlitchEffect>();
     }
 	
 	// Update is called once per frame
@@ -56,9 +66,18 @@ public class CameraHolder : MonoBehaviour {
         {
             StartCoroutine(CamShake());
             StartCoroutine(Delock());
+            if(glitch != null)
+            {
+                glitch.intensity = 1;
+                glitch.flipIntensity = 1;
+                //glitch.flickIntensity = 1;
+                glitch.colorIntensity = 1;
+                DOTween.To(() => glitch.intensity, x => glitch.intensity = x, 0, 0.2f).SetEase(Ease.InExpo);
+                DOTween.To(() => glitch.flipIntensity, x => glitch.flipIntensity = x, 0, 0.2f).SetEase(Ease.InExpo);
+                DOTween.To(() => glitch.colorIntensity, x => glitch.colorIntensity = x, 0, 0.2f).SetEase(Ease.InExpo);
+                DOTween.To(() => glitch.flickIntensity, x => glitch.flickIntensity = x, 0, 0.2f).SetEase(Ease.InExpo);
+            }
         }
-        else if (Input.GetKeyDown(KeyCode.J) && player.canDash == true && player.complete == false)
-            StartCoroutine(CamShake());
     }
 
     private void LateUpdate()
@@ -95,10 +114,15 @@ public class CameraHolder : MonoBehaviour {
         }
     }
 
+    void StartCamShake(object sender, EventArgs e)
+    {
+        StartCoroutine(CamShake());
+    }
+
     IEnumerator CamShake()
     {
-        seed1 = Random.Range(-5, 5);
-        seed2 = Random.Range(-5, 5);
+        seed1 = UnityEngine.Random.Range(-5, 5);
+        seed2 = UnityEngine.Random.Range(-5, 5);
         isShakeing = true;
         while(duration < 0.3f)
         {
@@ -117,6 +141,8 @@ public class CameraHolder : MonoBehaviour {
 
     public IEnumerator MoveParallax(Vector3 endPos, Vector3 oldPos, float time)
     {
+        if (far == null || farR == null || near == null || nearR == null)
+            yield break;
         float deltaX = endPos.x - oldPos.x;
         float deltaY = endPos.y - oldPos.y;
         float farX = -deltaX / 7.5f, farY = -deltaY / 16.5f, nearX = -deltaX / 5f, nearY = -deltaY / 11f;
@@ -167,6 +193,11 @@ public class CameraHolder : MonoBehaviour {
 
     public IEnumerator MoveParallax(Vector3 endPos, Vector3 oldPos, float time, Ease ease)
     {
+        if (far == null || farR == null || near == null || nearR == null)
+        {
+            StartCoroutine(end.EndCutScene());
+            yield break;
+        }
         float deltaX = endPos.x - oldPos.x;
         float deltaY = endPos.y - oldPos.y;
         float farX = -deltaX / 7.5f, farY = -deltaY / 16.5f, nearX = -deltaX / 5f, nearY = -deltaY / 11f;
@@ -212,12 +243,13 @@ public class CameraHolder : MonoBehaviour {
         farR.transform.DOLocalMove(farRM, time).SetUpdate(true).SetEase(ease);
         near.transform.DOLocalMove(nearM, time).SetUpdate(true).SetEase(ease);
         nearR.transform.DOLocalMove(nearRM, time).SetUpdate(true).SetEase(ease);
-        yield return new WaitForSeconds(0.75f);
+        yield return new WaitForSeconds(time - 0.5f);
+        StartCoroutine(end.EndCutScene());
     }
 
-    public void EndLevel()
+    public void EndLevel(float move)
     {
-        float endY = this.transform.position.y + 110f;
+        float endY = this.transform.position.y + move;
         Vector3 oldPos = this.transform.position;
         Vector3 endPos = new Vector3(oldPos.x, endY + 220f, oldPos.z);
         StartCoroutine(MoveParallax(endPos, oldPos, 3.0f, Ease.InOutQuint));

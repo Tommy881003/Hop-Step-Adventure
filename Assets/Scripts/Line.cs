@@ -12,13 +12,14 @@ public class Line : MonoBehaviour
     public bool isActivate, isMove;
     public float MoveSpeed;
     private float hitDist;
-    private int rotation;
+    private int rotation, levelNum;
     private Vector2 dir, dirRecord, velocity;
     private bool initial;
     private PlayerControl player;
     private float t = 0;
     private Vector2 blobPosA,blobPosB,rayDir;
     private GameObject BlobA, BlobB;
+    private ObjAudioManager audioManager;
 
     // Start is called before the first frame update
     void Start()
@@ -57,7 +58,11 @@ public class Line : MonoBehaviour
         BlobB = Instantiate(blob,blobPosB,Quaternion.identity,this.transform);
         dirRecord = dir;
         if (isMove)
-            hitDist = Mathf.Abs(MoveSpeed / 20f);
+            hitDist = Mathf.Abs((MoveSpeed + 5f)/ 20f);
+        audioManager = this.GetComponent<ObjAudioManager>();
+        levelNum = this.GetComponent<Interactable>().level;
+        if (levelNum == player.currentLevel)
+            PlaySound(initial);
     }
 
     private void Update()
@@ -83,7 +88,7 @@ public class Line : MonoBehaviour
         }
         if (isActivate == true)
         {
-            t += Time.fixedDeltaTime;
+            t += Time.deltaTime;
             float scale = (Mathf.Sin(40 * t) * 0.075f + 0.6f);
             lr.widthMultiplier = (Mathf.Sin(40 * t) * 0.04f + 0.4f);
             BlobA.transform.localScale = new Vector3(scale, scale);
@@ -120,6 +125,10 @@ public class Line : MonoBehaviour
         else
             yield return new WaitForSecondsRealtime(0.8f);
         isActivate = initial;
+        if (isActivate)
+            audioManager.PlayByName("Buzz");
+        else
+            audioManager.StopByName("Buzz");
         if(isMove)
         {
             this.transform.position = Pos;
@@ -127,8 +136,28 @@ public class Line : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        if (audioManager != null)
+            PlaySound(initial);
+    }
+
     private void OnDisable()
     {
         this.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+        if(audioManager != null)
+            audioManager.StopByName("Buzz");
+        if(isActivate && audioManager != null)
+            audioManager.PlayByName("BuzzOut");
+    }
+
+    public void PlaySound(bool enable)
+    {
+        if (levelNum != player.currentLevel)
+            return;
+        if (enable)
+            audioManager.PlayByName("Buzz");
+        else
+            audioManager.StopByName("Buzz");
     }
 }

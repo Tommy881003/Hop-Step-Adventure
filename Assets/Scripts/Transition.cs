@@ -107,6 +107,8 @@ public class Transition : MonoBehaviour
 
         if (isUp)
         {
+            if (control.isDashing)
+                control.isDashing = false;
             rb.velocity = new Vector2(0.5f * rb.velocity.x, 17.5f);
             StartCoroutine(control.EndTransition());
         }
