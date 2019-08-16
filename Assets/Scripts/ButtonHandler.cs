@@ -11,22 +11,23 @@ public class ButtonHandler : MonoBehaviour
     public event EventHandler OnRetry;
     private PlayerControl control;
     private int selectedButton = 0;
-    [SerializeField]
-    private TMPro.TextMeshProUGUI[] buttonList;
+    public TMPro.TextMeshProUGUI[] buttonList;
     private GameObject showKey;
     private TMPro.TextMeshProUGUI key;
-    [SerializeField]
-    private InputManager input;
+    public InputManager input;
     private bool canPress, canMove, canInput;
     private Event e;
     private KeyCode newKey;
-    [SerializeField]
-    private GameObject keyOption;
+    public GameObject nextCarrier;
+    private SceneAudioManager audioManager = null;
+    private Counter counter = null;
 
     void OnEnable()
     {
         buttonList[0].color = Color.yellow;
         control = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+        audioManager = GameObject.Find("SceneAudioManager").GetComponent<SceneAudioManager>();
+        counter = Resources.Load<Counter>("Scriptable Object/Counter");
         control.enabled = false;
         selectedButton = 0;
         canPress = false;
@@ -34,7 +35,7 @@ public class ButtonHandler : MonoBehaviour
         canInput = false;
         if (input != null)
         {
-            if(this.name == "SecondCarrier")
+            if(this.name == "ThirdCarrier")
             showKey = this.transform.Find("KeyInput").gameObject;
             if (showKey != null)
                 key = showKey.transform.Find("Key").gameObject.GetComponent<TMPro.TextMeshProUGUI>();
@@ -42,6 +43,12 @@ public class ButtonHandler : MonoBehaviour
             {
                 if (gui.name == "Key" && gui.GetComponentInChildren<TMPro.TextMeshProUGUI>() != null)
                     gui.transform.Find(gui.text).gameObject.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = input.giveKeyCode(gui.text);
+                else if (gui.name == "BGM")
+                    gui.transform.Find("Volume").gameObject.GetComponent<TMPro.TextMeshProUGUI>().text = "< " + Mathf.RoundToInt(audioManager.musicAmp * 10).ToString() + " >";
+                else if (gui.name == "BGFX")
+                    gui.transform.Find("Volume").gameObject.GetComponent<TMPro.TextMeshProUGUI>().text = "< " + Mathf.RoundToInt(audioManager.fxAmp * 10).ToString() + " >";
+                else if (gui.name == "Timer")
+                    gui.transform.Find("Switch").gameObject.GetComponent<TMPro.TextMeshProUGUI>().text = ((counter.enableTimer == true)? "On" : "Off");
             }
         }
     }
@@ -59,8 +66,18 @@ public class ButtonHandler : MonoBehaviour
             MoveToNextButton();
         else if (Input.GetKeyDown(input.up) && canMove)
             MoveToPreviousButton();
-        if (canPress == true && Input.GetKeyDown(KeyCode.Return))
-            this.BroadcastMessage(buttonList[selectedButton].name + "Action");
+        if (buttonList[selectedButton].name == "BGM" || buttonList[selectedButton].name == "BGFX")
+        {
+            if (Input.GetKeyDown(input.right))
+                ChangeVolume(buttonList[selectedButton].name, true);
+            else if (Input.GetKeyDown(input.left))
+                ChangeVolume(buttonList[selectedButton].name, false);
+        }
+        else
+        {
+            if (canPress == true && Input.GetKeyDown(KeyCode.Return))
+                this.BroadcastMessage(buttonList[selectedButton].name + "Action");
+        }
         canPress = true;
     }
 
@@ -113,9 +130,37 @@ public class ButtonHandler : MonoBehaviour
 
     void OptionAction()
     {
-        if (keyOption != null)
-            keyOption.SetActive(true);
+        if (nextCarrier != null)
+            nextCarrier.SetActive(true);
         this.gameObject.SetActive(false);
+    }
+
+    void TimerAction()
+    {
+        counter.enableTimer = !counter.enableTimer;
+        buttonList[selectedButton].transform.Find("Switch").gameObject.GetComponent<TMPro.TextMeshProUGUI>().text = ((counter.enableTimer == true) ? "On" : "Off");
+    }
+
+    void ChangeVolume(string name, bool plus)
+    {
+        float temp = 0;
+        if(name == "BGM")
+        {
+            if(plus)
+                audioManager.musicAmp = Mathf.Clamp(audioManager.musicAmp + 0.1f, 0, 1);
+            else
+                audioManager.musicAmp = Mathf.Clamp(audioManager.musicAmp - 0.1f, 0, 1);
+            temp = audioManager.musicAmp;
+        }
+        else if(name == "BGFX")
+        {
+            if (plus)
+                audioManager.fxAmp = Mathf.Clamp(audioManager.fxAmp + 0.1f, 0, 1);
+            else
+                audioManager.fxAmp = Mathf.Clamp(audioManager.fxAmp - 0.1f, 0, 1);
+            temp = audioManager.fxAmp;
+        }
+        buttonList[selectedButton].transform.Find("Volume").gameObject.GetComponent<TMPro.TextMeshProUGUI>().text = "< " + Mathf.RoundToInt(temp * 10).ToString() + " >";
     }
 
     void KeyAction()
@@ -137,7 +182,7 @@ public class ButtonHandler : MonoBehaviour
         key.text = buttonList[selectedButton].text;
         yield return new WaitForEndOfFrame();
         yield return WaitForKey();
-        if(newKey != KeyCode.None && newKey != KeyCode.Return && newKey != KeyCode.Escape)
+        if(input.checkValid(newKey) == true)
         {
             input.setKey(buttonList[selectedButton].text, newKey);
             buttonList[selectedButton].transform.Find(buttonList[selectedButton].text).gameObject.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = newKey.ToString();

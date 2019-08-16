@@ -15,11 +15,14 @@ public class Clip
 public class ObjAudioManager : MonoBehaviour
 {
     public AudioClipArray clipArray;
-    private List<Clip> clips = new List<Clip>();
+    private List<Clip> clips = new List<Clip>(), loopClips = new List<Clip>();
+    private int loop = 0;
+    private SceneAudioManager audioManager;
 
     private void Awake()
     {
-        if(clipArray != null)
+        audioManager = GameObject.Find("SceneAudioManager").GetComponent<SceneAudioManager>();
+        if (clipArray != null)
         {
             clipArray.Initialize();
             foreach(Sound s in clipArray.sounds)
@@ -37,7 +40,23 @@ public class ObjAudioManager : MonoBehaviour
                 newClip.source.loop = s.loop;
                 newClip.source.spatialBlend = s.blend;
                 clips.Add(newClip);
+                if (s.loop)
+                    loopClips.Add(newClip);
             }
+        }
+    }
+
+    private void Start()
+    {
+        enabled = false;
+    }
+
+    private void Update()
+    {
+        foreach(Clip c in loopClips)
+        {
+            if (c.source.isPlaying)
+                c.source.volume = c.volume * audioManager.fxAmp;
         }
     }
 
@@ -49,6 +68,11 @@ public class ObjAudioManager : MonoBehaviour
             if (hash == s.hash && name.Equals(s.name))
             {
                 s.source.Play();
+                s.source.volume = s.volume * audioManager.fxAmp;
+                if (s.source.loop)
+                    loop++;
+                if (loop > 0)
+                    enabled = true;
                 return;
             }
         }
@@ -62,8 +86,12 @@ public class ObjAudioManager : MonoBehaviour
         {
             if (hash == s.hash && name.Equals(s.name))
             {
-                if(s.source.isPlaying)
+                if (s.source.isPlaying)
                     s.source.Stop();
+                if (s.source.loop == true)
+                    loop--;
+                if (loop == 0)
+                    enabled = false;
                 return;
             }
         }

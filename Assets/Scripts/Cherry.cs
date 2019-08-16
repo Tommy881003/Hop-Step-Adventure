@@ -18,9 +18,11 @@ public class Cherry : MonoBehaviour
     [SerializeField]
     private Material haveBeenCollect;
     private ObjAudioManager audioManager;
+    private Counter counter;
 
     void Start()
     {
+        counter = Resources.Load<Counter>("Scriptable Object/Counter");
         player = GameObject.FindGameObjectWithTag("Player");
         control = player.GetComponent<PlayerControl>();
         cc = this.GetComponent<CircleCollider2D>();
@@ -89,6 +91,8 @@ public class Cherry : MonoBehaviour
         sr.material = haveBeenCollect;
         ParticleSystem.MainModule main = ps.main;
         main.startColor = Color.white;
+        if (counter != null && collected == false)
+            counter.HardDiskAmount++;
         collected = true;
         touched = false;
         anim.SetTrigger("Collect");

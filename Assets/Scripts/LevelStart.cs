@@ -15,6 +15,7 @@ public class LevelStart : MonoBehaviour
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
         image = this.GetComponentInChildren<Image>();
+        image.color = Color.black;
         glitch = Camera.main.GetComponent<GlitchEffect>();
         player.isCutScene = true;
         audioManager = GameObject.Find("SceneAudioManager").GetComponent<SceneAudioManager>();

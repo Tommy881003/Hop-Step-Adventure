@@ -76,4 +76,12 @@ public class InputManager : ScriptableObject
         jump = KeyCode.K;
         climb = KeyCode.L;
     }
+
+    public bool checkValid(KeyCode newKey)
+    {
+        if (newKey == up || newKey == down || newKey == left || newKey == right || newKey == jump || newKey == climb || newKey == dash || newKey == KeyCode.None || newKey == KeyCode.Return || newKey == KeyCode.Escape)
+            return false;
+        else
+            return true;
+    }
 }

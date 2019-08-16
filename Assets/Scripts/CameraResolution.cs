@@ -21,6 +21,6 @@ public class CameraResolution : MonoBehaviour
         if (ratio >= defaultRatio)
             cam.orthographicSize = 11;
         else
-            cam.orthographicSize = 40 / (2 * ratio);
+            cam.orthographicSize = defaultRatio / ratio * 11f;
     }
 }

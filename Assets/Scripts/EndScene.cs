@@ -16,6 +16,8 @@ public class EndScene : MonoBehaviour
     [SerializeField]
     private GameObject button;
     private SceneAudioManager audioManager;
+    [SerializeField]
+    private Result result = null;
 
     // Start is called before the first frame update
     void Start()
@@ -78,6 +80,11 @@ public class EndScene : MonoBehaviour
         else
         {
             yield return new WaitUntil(() => image.color == Color.black);
+            if (result != null)
+            {
+                StartCoroutine(result.showResult());
+                yield return new WaitUntil(() => result.done == true);
+            }
             currentString = "";
             for (int i = 0; i < toShowNext.Length + 1; i++)
             {
