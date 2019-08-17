@@ -18,7 +18,7 @@ public class ButtonHandler : MonoBehaviour
     private bool canPress, canMove, canInput;
     private Event e;
     private KeyCode newKey;
-    public GameObject nextCarrier;
+    public GameObject nextCarrier, credit;
     private SceneAudioManager audioManager = null;
     private Counter counter = null;
 
@@ -132,6 +132,13 @@ public class ButtonHandler : MonoBehaviour
     {
         if (nextCarrier != null)
             nextCarrier.SetActive(true);
+        this.gameObject.SetActive(false);
+    }
+
+    void CreditAction()
+    {
+        if (credit != null)
+            credit.SetActive(true);
         this.gameObject.SetActive(false);
     }
 

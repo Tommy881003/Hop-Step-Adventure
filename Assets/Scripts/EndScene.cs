@@ -9,6 +9,7 @@ using DG.Tweening;
 public class EndScene : MonoBehaviour
 {
     private TextMeshProUGUI texts, indication, thank;
+    private Canvas canvas;
     private Image image;
     public string toShow, toShowNext;
     private string currentString = "";
@@ -22,6 +23,7 @@ public class EndScene : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        canvas = this.GetComponent<Canvas>();
         texts = this.transform.Find("LevelComplete").gameObject.GetComponent<TextMeshProUGUI>();
         indication = this.transform.Find("Indication").gameObject.GetComponent<TextMeshProUGUI>();
         thank = this.transform.Find("ThankYou").gameObject.GetComponent<TextMeshProUGUI>();
@@ -53,6 +55,7 @@ public class EndScene : MonoBehaviour
         }
         if (button == null)
         {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             yield return new WaitUntil(() => image.color == Color.black);
             indication.text = "";
             currentString = "";

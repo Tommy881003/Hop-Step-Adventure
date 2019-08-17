@@ -26,6 +26,7 @@ public class StartCutScene : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        message[1] += System.DateTime.Now.ToString("yyyy-MM-dd");
         player = GameObject.FindGameObjectWithTag("Player");
         control = player.GetComponent<PlayerControl>();
         playerRenderer = player.GetComponent<SpriteRenderer>();
